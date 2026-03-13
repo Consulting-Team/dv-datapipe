@@ -3,7 +3,7 @@
 from config import config
 from jmlogger import logger
 from connection import ImpalaConnection, abfs
-from utils.metadata import read_metadata, MetaData
+from utils.metadata import read_metadata, MetaData, get_db_name
 from functools import reduce
 import polars as pl
 
@@ -309,14 +309,15 @@ def query_data(
             continue
 
         # db_name 추출하기
-        db_names = {m.db_name for m in metadata_list}
+        # db_names = {m.db_name for m in metadata_list}
 
-        if len(db_names) != 1:
-            err_msg = f"DB must be unique. (fount: {', ' if db_names else 'None'})"
-            logger.error(err_msg)
-            raise ValueError(err_msg)
+        # if len(db_names) != 1:
+        #     err_msg = f"DB must be unique. (fount: {', ' if db_names else 'None'})"
+        #     logger.error(err_msg)
+        #     raise ValueError(err_msg)
 
-        db_name = db_names.pop()
+        # db_name = db_names.pop()
+        db_name = get_db_name(metadata_dict)
 
         # 쿼리문 생성
         for m in metadata_list:
@@ -365,7 +366,7 @@ def query_data(
 
         combined_df = reduce(
             lambda left, right: left.join(right, on="time_sync", how="left"),
-            list(df_set.values())
+            list(df_set.values()),
         )
 
     return combined_df

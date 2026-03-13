@@ -1,7 +1,7 @@
 import csv
 import polars as pl
 from dataclasses import dataclass
-from collections import defaultdict
+from jmlogger import logger
 
 
 @dataclass
@@ -43,6 +43,19 @@ def read_metadata(path: str) -> dict[str, MetaData]:
             tables[info.table_name].append(info)
 
     return tables
+
+
+def get_db_name(metadata_dict: dict[str, MetaData]) -> str | None:
+    db_names = {
+        m.db_name for metadata_list in metadata_dict.values() for m in metadata_list
+    }
+
+    if len(db_names) == 1:
+        return db_names.pop()
+    else:
+        err_msg = f"DB must be unique. (fount: {', ' if db_names else 'None'})"
+        logger.error(err_msg)
+        raise ValueError(err_msg)
 
 
 # if __name__ == "__main__":
