@@ -24,7 +24,6 @@ ct3_liq_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1303_pv,CT3 AVERAGE LIQUID TEMPE
 ct3_liq_volume,hlng,h2521_ias_ias_no1_pivot,ct0403_pv,CT3 LIQUID VOLUME,m3,DOUBLE
 ct4_liq_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1304_pv,CT4 AVERAGE LIQUID TEMPERATURE,℃,DOUBLE
 ct4_liq_volume,hlng,h2521_ias_ias_no1_pivot,ct0404_pv,CT4 LIQUID VOLUME,m3,DOUBLE
-ds_timestamp,hlng,h2521_ias_ias_no1_pivot,ds_timestamp,UNIX TIMESTAMP,-,TIMESTAMP
 gcu_flow,hlng,h2521_ias_ias_no1_pivot,gc0016_pv,GCU FLOW,kg/h,DOUBLE
 ge_fg_inlet_flow,hlng,h2521_ias_ias_no1_pivot,gf054_01_daca_pv,GE FUEL GAS INLET FLOW IND,kg/h,DOUBLE
 ge_fo_inlet_flow,hlng,h2521_ias_ias_no1_pivot,oe012_01_daca_pv,GE FO INLET FLOW IND,kg/h,DOUBLE
@@ -41,7 +40,6 @@ ge3_fg_mode_run,hlng,h2521_ias_ias_no2_pivot,gx309_digacqa_pvfl,DFGE3 GAS MODE A
 ge3_fo_mode_run,hlng,h2521_ias_ias_no2_pivot,gx308_digacqa_pvfl,DFGE3 DIESEL MODE ACTIVE,-,INTEGER
 ge3_load,hlng,h2521_ias_ias_no1_pivot,gx33321_pv,DFGE3 ENGINE LOAD,%,DOUBLE
 ge3_power,hlng,h2521_ias_ias_no1_pivot,pm302_01_daca_pv,DFGE3 PWR,kW,DOUBLE
-id,hlng,h2521_ias_ias_no1_pivot,ds_timestamp,UNIX TIMESTAMP,-,BIGINT
 me1_fg_flow,hlng,h2521_ias_ias_no1_pivot,gf022_daca_pv,ME(S) GAS FLOW,kg/h,DOUBLE
 me1_fg_inlet_flow,hlng,h2521_ias_ias_no1_pivot,gf052_01_daca_pv,ME(S) FUEL GAS INLET FLOW IND,kg/h,DOUBLE
 me1_fg_press,hlng,h2521_ias_ias_no1_pivot,gf014_daca_pv,ME(S) GAS TO ENGINE PRESS IND,bar,DOUBLE
