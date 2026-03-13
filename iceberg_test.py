@@ -6,7 +6,6 @@ from connection import ImpalaConnection, abfs
 from utils.metadata import read_metadata, MetaData, get_db_name
 from functools import reduce
 import polars as pl
-from datetime import timedelta
 
 # 테이블이 생성될 DB
 DB_NAME = "tmp"
@@ -301,12 +300,9 @@ def query_data(
     df_set = dict()
 
     for table_name, metadata_list in metadata_dict.items():
-        col_map = dict()
+        col_map = {"ds_timestamp": f"id_{table_name}"}
 
-        tags = [
-            f"CAST(CAST(ds_timestamp    AS    DOUBLE) AS BIGINT) AS ds_timestamp",
-            f"CAST(CAST(ds_timestamp    AS    DOUBLE) AS BIGINT) AS id_{table_name}",
-        ]
+        tags = [f"CAST(CAST(ds_timestamp    AS    DOUBLE) AS BIGINT) AS ds_timestamp"]
 
         if not metadata_list:
             logger.warning(f"Empty metadata list - {table_name}. Skip to next table.")
@@ -316,6 +312,14 @@ def query_data(
 
         # 쿼리문 생성
         for m in metadata_list:
+            if "ds_timestamp" == m.col_name.lower():
+                continue
+
+            # id 형 변환
+            if "id" == m.col_name.lower():
+                tags.append(f"CAST(CAST(ds_timestamp    AS    DOUBLE) AS BIGINT) AS id")
+                continue
+
             # 메타데이터 정의대로 형 변환
             tags.append(f"CAST({m.tag}    AS    {m.data_type})    AS    {m.tag}")
             col_map[m.tag] = m.col_name
@@ -331,47 +335,30 @@ def query_data(
         # 데이터 쿼리
         df = conn.query_polars(sql=sql)
 
-        # 쿼리 결과가 비어있을 경우
         if df.is_empty():
             logger.warning(f"The query result set for table '{table_name}' is empty.")
 
         # tag 이름 column 이름으로 맵핑
         df = df.rename(col_map)
-        df = df.with_columns(
-            # pl.from_epoch(pl.col(f"id_{table_name}"), time_unit="ms")
-            pl.col("ds_timestamp").cast(pl.Int64),
-        # nearest joint을 위해 반드시 소팅 필요
-        ).sort("ds_timestamp")
 
         # 15초 간격 리샘플
-        # synced_df = (
-        #     df.with_columns(
-        #         pl.from_epoch(pl.col(f"id_{table_name}"), time_unit="ms")
-        #         .dt.round("15s")
-        #         .alias("time_sync")
-        #     )
-        #     .group_by("time_sync")
-        #     .agg(pl.all().first())
-        #     .sort("time_sync")
-        # )
-        # df_set[table_name] = synced_df
+        synced_df = (
+            df.with_columns(
+                pl.from_epoch(pl.col(f"id_{table_name}"), time_unit="ms")
+                .dt.round("15s")
+                .alias("time_sync")
+            )
+            .group_by("time_sync")
+            .agg(pl.all().first())
+            .sort("time_sync")
+        )
 
-        df_set[table_name] = df
+        df_set[table_name] = synced_df
 
-    # 테이블 별 데이터프레임 열 방향으로 조인
-    # combined_df = reduce(
-    #     lambda left, right: left.join(right, on="time_sync", how="left"),
-    #     list(df_set.values()),
-    # )
-    combined_df = reduce(
-        lambda left, right: left.join_asof(
-            right,
-            on="ds_timestamp",
-            strategy="nearest",
-            tolerance=15000,
-        ),
-        df_set.values(),
-    )
+        combined_df = reduce(
+            lambda left, right: left.join(right, on="time_sync", how="left"),
+            list(df_set.values()),
+        )
 
     return combined_df
 
@@ -392,7 +379,6 @@ def main():
     # )
 
     df = query_data(metadata_list, departure="20260201", arrival="20260201")
-    logger.debug(df)
     df.write_csv("combined.csv")
 
     # 테스트용
