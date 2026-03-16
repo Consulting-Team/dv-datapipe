@@ -94,7 +94,7 @@ ship_list,hlng,h2521_ias_ias_no1_pivot,trimcal_rg018_pv,LIST,m,DOUBLE
 ship_mid_port_draft,hlng,h2521_ias_ias_no1_pivot,rg010_01_daca_pv,MID DRAFT PORT LVL,m,DOUBLE
 ship_mid_stbd_draft,hlng,h2521_ias_ias_no1_pivot,rg011_01_daca_pv,MID DRAFT STBD LVL,m,DOUBLE
 ship_trim,hlng,h2521_ias_ias_no1_pivot,trimcal_rg019_pv,TRIM,m,DOUBLE
-vdr_aivdm_cog ,hlng,h2521_vdr_aivdo1_pivot,course_over_ground,course_over_ground,°,DOUBLE
+vdr_aivdo_cog,hlng,h2521_vdr_aivdo1_pivot,course_over_ground,course_over_ground,°,DOUBLE
 vdr_aivdo_lat,hlng,h2521_vdr_aivdo1_pivot,latitude,latitude,°,DOUBLE
 vdr_aivdo_lon,hlng,h2521_vdr_aivdo1_pivot,longitude,longitude,°,DOUBLE
 vdr_aivdo_sog,hlng,h2521_vdr_aivdo1_pivot,speed_over_ground,speed_over_ground,kn,DOUBLE
