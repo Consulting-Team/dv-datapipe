@@ -5,7 +5,7 @@ from jmlogger import logger
 from connection import ImpalaConnection, abfs
 from utils.metadata import read_metadata, MetaData, get_db_name
 from functools import reduce
-from pathlib import Path
+from time import perf_counter
 import polars as pl
 
 # 테이블이 생성될 DB
@@ -14,7 +14,7 @@ DB_NAME = "tmp"
 TABLE_NAME = f"{config.hull}_iceberg_test"
 
 
-def get_storage_location(hull=None) -> str:
+def get_storage_location() -> str:
     # 클라우드 테이블 저장 위치 반환
     container_name = config.hs4v1_abfs_strg_cont
     account_name = config.hs4v1_abfs_strg_acc
@@ -25,6 +25,8 @@ def get_storage_location(hull=None) -> str:
 
 def clear_table():
     # 테이블 및 오브젝트 스토리지 데이터 삭제
+    start = perf_counter()
+
     connection = ImpalaConnection()
     conn = connection.conn
     cursor = conn.cursor()
@@ -39,53 +41,36 @@ def clear_table():
     if abfs.exists(location):
         abfs.rm(location, recursive=True)
 
-
-# def insert_data(
-#     col_names: list[str], metadata_dict: dict[str, MetaData], start: str, end: str
-# ):
-#     conn = ImpalaConnection().conn
-
-#     # source table에서 데이터 쿼리
-#     df = query_data(metadata_dict=metadata_dict, start=start, end=end)
-#     df = df.with_columns(pl.from_epoch("ds_timestamp", time_unit="ms"))
-#     data = df.to_dicts()
-
-#     # print(df)
-#     col_str = ",\n\t".join(col_names)
-#     val_str = ",\n\t".join([f"%({col})s" for col in col_names])
-#     sql = f"INSERT INTO {DB_NAME}.{TABLE_NAME} ({col_str}) VALUES ({val_str})"
-
-#     logger.debug(sql)
-
-#     cursor = conn.cursor()
-#     cursor.executemany(sql, data)
-
-#     return
+    logger.info(f"clear_table(): {perf_counter() - start: .2f} sec")
 
 
-def insert_data2(
+def insert_data(
     col_names: list[str], metadata_dict: dict[str, MetaData], start: str, end: str
 ):
+    start_time = perf_counter()
     conn = ImpalaConnection().conn
     cursor = conn.cursor()
     cursor.execute("SET PARQUET_FALLBACK_SCHEMA_RESOLUTION=name")
 
+    # 임시 parquet 저장위치 설정
     base = get_storage_location().replace(f"/{config.hull}/", "")
     tmp_dir = f"{str(base)}/tmpdata"
     tmp_parquet_path = f"{tmp_dir}/{start}_{end}.parquet"
-    tmp_tbl_name = f"{config.hull}_{start}_{end}"
 
     # source table에서 데이터 쿼리
     df = query_data(metadata_dict=metadata_dict, start=start, end=end)
     df = df.with_columns(pl.from_epoch("ds_timestamp", time_unit="ms"))
 
     # 임시 테이블 생성
+    ## 임시 테이블 이름
+    tmp_tbl_name = f"{config.hull}_{start}_{end}"
+
     ## parquet 저장 경로 생성
     if not abfs.exists(tmp_dir):
         abfs.makedirs(tmp_dir, exist_ok=True)
         logger.debug(f"Temporary Dataframe has been copied to '{tmp_dir}'.")
 
-    ## Azure에 데이터 프레임 저장
+    ## Azure에 parquet 저장
     df.write_parquet(
         tmp_parquet_path,
         storage_options={
@@ -97,6 +82,7 @@ def insert_data2(
     ## 임시 테이블 생성 및 파티션 연결
     ### 동일한 테이블 이름이 있으면 삭제
     cursor.execute(f"DROP TABLE IF EXISTS tmp.{tmp_tbl_name}")
+
     ### sql 문작성
     sql = f"""
         CREATE EXTERNAL TABLE tmp.{tmp_tbl_name} (
@@ -111,8 +97,10 @@ def insert_data2(
     col_names_str = ",\n\t".join(
         [str_value.split()[0].strip() for str_value in col_names]
     )
-    sql = f"""INSERT INTO {DB_NAME}.{TABLE_NAME} ({col_names_str})
-    SELECT {col_names_str} FROM tmp.{tmp_tbl_name}
+    sql = f"""
+        INSERT INTO {DB_NAME}.{TABLE_NAME} ({col_names_str})
+        SELECT {col_names_str} FROM tmp.{tmp_tbl_name}
+        ORDER BY ds_timestamp
     """
     logger.debug(sql)
     cursor.execute(sql)
@@ -125,10 +113,12 @@ def insert_data2(
     ## 임시 테이블 삭제
     cursor.execute(f"DROP TABLE IF EXISTS tmp.{tmp_tbl_name}")
 
+    logger.info(f"insert_data(): {perf_counter() - start_time: .2f} sec")
 
 def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
     # Iceberg 테이블 생성
     # 생성된 테이블의 열을 배열로 반환
+    start = perf_counter()
     table_name = f"{DB_NAME}.{TABLE_NAME}"
     connection = ImpalaConnection()
 
@@ -152,7 +142,8 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
         CREATE TABLE IF NOT EXISTS {table_name} (
             {cols_str}
         )
-        PARTITIONED BY SPEC (MONTHS(ds_timestamp))
+        -- PARTITIONED BY SPEC (MONTHS(ds_timestamp))
+        PARTITIONED BY SPEC (YEARS(ds_timestamp))
         STORED AS ICEBERG
         LOCATION '{location}'
         TBLPROPERTIES (
@@ -167,96 +158,20 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
     cursor = connection.conn.cursor()
     cursor.execute(sql)
 
-    logger.info(f"The '{table_name}' table has been successfully created.")
-
     rs = cursor.fetchall()
     for row in rs:
         logger.debug(row[0])
 
+    logger.info(f"create_iceberg_table(): {perf_counter() - start: .2f} sec")
+
     return cols
-
-
-# def copy_data(metadata_list: list[MetaData], start: str, end: str):
-#     # 특정 테이블에 있는 데이터를 새로 생성한 Iceberg 테이블로 복사
-#     connection = ImpalaConnection()
-
-#     db_name = list(set([m.db_name for m in metadata_list]))
-#     table_name = list(set([m.table_name for m in metadata_list]))
-
-#     if not db_name:
-#         err_msg = "Not available metadata - db_name is empty."
-#         logger.error(err_msg)
-#         raise ValueError(err_msg)
-
-#     if len(db_name) > 1:
-#         err_msg = "Not available metadata - db_name is not unique."
-#         logger.error(err_msg)
-#         raise ValueError(err_msg)
-
-#     if not table_name:
-#         err_msg = "Not available metadata - table_name is empty."
-#         logger.error(err_msg)
-#         raise ValueError(err_msg)
-
-#     if len(table_name) != 1:
-#         err_msg = "Not available metadata - table_name is not unique."
-#         logger.error(err_msg)
-#         raise ValueError(err_msg)
-
-#     db_name = db_name[0]
-#     table_name = table_name[0]
-
-#     # 복사할 열 세팅
-#     cols = list()
-#     tags = list()
-#     for m in metadata_list:
-#         cols.append(m.col_name)
-
-#         # timestamp 형 변환
-#         if "timestamp" in m.col_name.lower():
-#             tags.append(
-#                 f"FROM_UNIXTIME(CAST(CAST({m.tag}    AS    BIGINT) / 1000 AS BIGINT)) AS ds_timestamp"
-#             )
-#             continue
-
-#         # id 형 변환
-#         if "id" in m.col_name.lower():
-#             tags.append(f"CAST(CAST(ds_timestamp    AS    DOUBLE) AS BIGINT) AS id")
-#             continue
-
-#         # 메타데이터 정의대로 형 변환
-#         tags.append(f"CAST({m.tag}    AS    {m.data_type})")
-
-#     cols = ",\n".join(cols)
-#     tags = ",\n".join(tags)
-
-#     # ias_no1 데이터 복사
-#     sql = f"""
-#         INSERT INTO {DB_NAME}.{TABLE_NAME} (
-#             {cols}
-#         )
-#         SELECT
-#             {tags}
-#         FROM {db_name}.{table_name}
-#         WHERE ds_date BETWEEN '{start}' AND '{end}'
-#         ORDER BY ds_timestamp
-#        -- limit 10;
-#     """
-
-#     # print(sql)
-#     # logger.debug(sql)
-
-#     cursor = connection.conn.cursor()
-#     cursor.execute(sql)
-
-#     logger.info(f"Data from the '{table_name}' table has been successfully copied.")
 
 
 def query_data(
     metadata_dict: dict[str, list[MetaData]], start: str, end: str
 ) -> pl.DataFrame:
     # 기존 테이블에서 데이터 쿼리
-
+    start_time = perf_counter()
     conn = ImpalaConnection()
     df_set = dict()
 
@@ -332,11 +247,7 @@ def query_data(
             pl.col("time_sync").cast(pl.Int64).alias("ds_timestamp"),
         )
 
-        # df = df.with_columns([
-        #     pl.col(pl.Int64).cast(pl.Int32),
-        #     pl.col(pl.Int32).cast(pl.Int32), # 이미 32인 것도 확인
-        #     pl.col(pl.Float32).cast(pl.Float64)
-        # ])
+    logger.info(f"query_data(): {perf_counter() - start_time: .2f} sec")
 
     return combined_df
 
@@ -351,9 +262,13 @@ def main():
     # Iceberg 테이블 생성
     col_names = create_iceberg_table(metadata_list)
 
-    insert_data2(col_names, metadata_list, start="20260101", end="20260301")
-    insert_data2(col_names, metadata_list, start="20260302", end="20260320")
+    insert_data(col_names, metadata_list, start="20260101", end="20260301")
+    insert_data(col_names, metadata_list, start="20260302", end="20260320")
 
 
 if __name__ == "__main__":
+    start = perf_counter()
+
     main()
+
+    logger.info(f"elapsed time: {perf_counter() - start: .2f} sec")
