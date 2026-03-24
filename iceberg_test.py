@@ -1,6 +1,6 @@
-#! H2521호선 iceberg 테이블 생성 테스트
+#! iceberg 테이블을 생성하고 기존 테이블에서 데이터를 복사해서 삽입
 
-from config import config
+from config import config, logger
 from connection import ImpalaConnection, abfs
 from utils.metadata import read_metadata, MetaData, get_db_name
 from functools import reduce
@@ -14,23 +14,24 @@ DB_NAME = "tmp"
 # 새로 생성할 테이블 이름
 TABLE_NAME = f"{config.hull}_iceberg_test"
 
-logger = config.logger
+# logger = config.logger
 
 
-def get_storage_location() -> str:
-    # 클라우드 테이블 저장 위치 반환
-    container_name = config.hs4v1_abfs_strg_cont
-    account_name = config.hs4v1_abfs_strg_acc
-    location = f"abfss://{container_name}@{account_name}.dfs.core.windows.net/user/hive/hocean/hs4v2/{config.hull}/"
+# def get_storage_location() -> str:
+#     # 클라우드 테이블 저장 위치 반환
+#     container_name = config.hs4v1_abfs_strg_cont
+#     account_name = config.hs4v1_abfs_strg_acc
+#     location = f"abfss://{container_name}@{account_name}.dfs.core.windows.net/user/hive/hocean/hs4v2/{config.hull}/"
 
-    return location
+#     return location
 
 
 def clear_table():
     # 테이블 및 오브젝트 스토리지 데이터 삭제
     logger.info(f"👉 Clear exsiting table '{DB_NAME}.{TABLE_NAME}'.")
     start = perf_counter()
-    location = get_storage_location()
+    # location = get_storage_location()
+    location = config.storage_location
 
     try:
         connection = ImpalaConnection()
@@ -179,7 +180,8 @@ def insert_data(
     logger.info(f"👉 Insert the data into '{DB_NAME}.{TABLE_NAME}'")
 
     # 임시 parquet 저장위치 설정
-    base = get_storage_location().replace(f"/{config.hull}/", "")
+    # base = get_storage_location().replace(f"/{config.hull}/", "")
+    base = config.storage_location.replace(f"/{config.hull}/", "")
     tmp_dir = f"{str(base)}/tmpdata"
     tmp_parquet_path = f"{tmp_dir}/{start}_{end}.parquet"
     tmp_tbl_name = f"{config.hull}_{start}_{end}"
@@ -218,7 +220,8 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
     connection = ImpalaConnection()
 
     # 클라우드 테이블 저장위치
-    location = get_storage_location()
+    # location = get_storage_location()
+    location = config.storage_location
 
     # column 정의
     cols = ["ds_timestamp    TIMESTAMP"]
@@ -373,9 +376,9 @@ def main():
     # Iceberg 테이블 생성
     col_names = create_iceberg_table(metadata_list)
 
-    insert_data(col_names, metadata_list, start="20260101", end="20260102")
-    # insert_data(col_names, metadata_list, start="20260101", end="20260301")
-    # insert_data(col_names, metadata_list, start="20260302", end="20260320")
+    # 데이터 삽입
+    target_date = config.date.strftime("%Y%m%d")
+    insert_data(col_names, metadata_list, start=target_date, end=target_date)
 
 
 if __name__ == "__main__":

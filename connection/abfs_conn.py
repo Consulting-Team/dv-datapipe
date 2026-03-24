@@ -1,6 +1,4 @@
-from config import config
-
-# from jmlogger import logger
+from config import config, logger
 from adlfs import AzureBlobFileSystem
 
 BASE = f"{config.hs4v1_abfs_strg_cont}/user/hive/"
@@ -11,7 +9,7 @@ def _initialize() -> AzureBlobFileSystem:
         account_name=config.hs4v1_abfs_strg_acc, account_key=config.hs4v1_abfs_strg_key
     )
 
-    config.logger.debug("Successfully connected to Azure Blob.")
+    logger.debug("Successfully connected to Azure Blob.")
 
     # ------------------------------------------------------------
     # paths = fs.ls(BASE)

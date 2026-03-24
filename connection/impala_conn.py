@@ -1,12 +1,12 @@
 import atexit
 import polars as pl
-from config import config
+from config import config, logger
 from impala.hiveserver2 import HiveServer2Connection
 from impala.dbapi import connect
 
 __all__ = ["ImpalaConnection"]
 
-logger = config.logger
+# logger = config.logger
 
 class ImpalaConnection:
     def __init__(self):
