@@ -24,6 +24,18 @@ class Config:
     hs4v1_abfs_strg_protocol: str | None
     hs4v1_abfs_strg_cont: str | None
 
+    def display(self):
+        logger.info("🔔 Configurations")
+        logger.info(f"   - Hull Number: {self.hull}")
+        logger.info(f"   - Input Date: {self.date}")
+        logger.info(f"   - Impala Host: {self.impala_host}")
+        logger.info(f"   - Impala Port: {self.impala_port}")
+        logger.info(f"   - Impala User: {self.impala_user}")
+        logger.info(f"   - Storage Account: {self.hs4v1_abfs_strg_acc}")
+        logger.info(f"   - Container Name: {self.hs4v1_abfs_strg_cont}")
+
+        return
+
 
 def _initiaize() -> Config:
     global config, logger

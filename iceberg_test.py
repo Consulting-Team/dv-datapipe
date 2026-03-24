@@ -7,6 +7,7 @@ from functools import reduce
 from time import perf_counter
 from typing import Any
 import polars as pl
+import inspect
 
 # 테이블이 생성될 DB
 DB_NAME = "tmp"
@@ -29,22 +30,25 @@ def clear_table():
     # 테이블 및 오브젝트 스토리지 데이터 삭제
     logger.info(f"👉 Clear exsiting table '{DB_NAME}.{TABLE_NAME}'.")
     start = perf_counter()
-
-    connection = ImpalaConnection()
-    conn = connection.conn
-    cursor = conn.cursor()
-
     location = get_storage_location()
 
-    # 테이블 삭제
-    sql = f"DROP TABLE IF EXISTS {DB_NAME}.{TABLE_NAME};"
-    cursor.execute(sql)
+    try:
+        connection = ImpalaConnection()
+        conn = connection.conn
+        cursor = conn.cursor()
 
-    # 클라우드에서 데이터 삭제
-    if abfs.exists(location):
-        abfs.rm(location, recursive=True)
+        # 테이블 삭제
+        sql = f"DROP TABLE IF EXISTS {DB_NAME}.{TABLE_NAME};"
+        cursor.execute(sql)
 
-    logger.info(f"   - elapsed time: {perf_counter() - start: .2f} (sec)")
+        # 클라우드에서 데이터 삭제
+        if abfs.exists(location):
+            abfs.rm(location, recursive=True)
+
+        logger.info(f"   - elapsed time: {perf_counter() - start: .2f} (sec)")
+    except Exception as e:
+        logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
+        raise e
 
 
 def create_temporary_table(params: dict[str, Any]):
@@ -56,38 +60,42 @@ def create_temporary_table(params: dict[str, Any]):
     parquet_path = params["parquet_path"]
     df = params["df"]
 
-    conn = ImpalaConnection().conn
-    cursor = conn.cursor()
+    try:
+        conn = ImpalaConnection().conn
+        cursor = conn.cursor()
 
-    # 임시 테이블 생성
-    ## parquet 저장 경로 생성
-    if not abfs.exists(location):
-        abfs.makedirs(location, exist_ok=True)
-        logger.debug(f"  - Temporary Dataframe has been copied to '{location}'.")
+        # 임시 테이블 생성
+        ## parquet 저장 경로 생성
+        if not abfs.exists(location):
+            abfs.makedirs(location, exist_ok=True)
+            logger.debug(f"  - Temporary Dataframe has been copied to '{location}'.")
 
-    ## Azure에 parquet 저장
-    df.write_parquet(
-        parquet_path,
-        storage_options={
-            "account_name": config.hs4v1_abfs_strg_acc,
-            "account_key": config.hs4v1_abfs_strg_key,
-        },
-    )
-
-    cursor.execute(f"DROP TABLE IF EXISTS tmp.{table_name}")
-
-    ### 테이블 생성 sql 문작성
-    sql = f"""
-        CREATE EXTERNAL TABLE tmp.{table_name} (
-            {',\n\t'.join(col_names)}
+        ## Azure에 parquet 저장
+        df.write_parquet(
+            parquet_path,
+            storage_options={
+                "account_name": config.hs4v1_abfs_strg_acc,
+                "account_key": config.hs4v1_abfs_strg_key,
+            },
         )
-        STORED AS PARQUET
-        LOCATION '{location}'
-    """
-    cursor.execute(sql)
 
-    logger.info(f"   - create the temporary table 'tmp.{table_name}'.")
-    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}' (sec)")
+        cursor.execute(f"DROP TABLE IF EXISTS tmp.{table_name}")
+
+        ### 테이블 생성 sql 문작성
+        sql = f"""
+            CREATE EXTERNAL TABLE tmp.{table_name} (
+                {',\n\t'.join(col_names)}
+            )
+            STORED AS PARQUET
+            LOCATION '{location}'
+        """
+        cursor.execute(sql)
+
+        logger.info(f"   - create the temporary table 'tmp.{table_name}'.")
+        logger.info(f"     * elapsed time: {perf_counter() - start:.2f} (sec)")
+    except Exception as e:
+        logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
+        raise e
 
     return
 
@@ -98,36 +106,40 @@ def merge_tables(params: dict[str, Any]):
     col_names = params["col_names"]
     table_name = params["tbl_name"]
 
-    conn = ImpalaConnection().conn
-    cursor = conn.cursor()
-    cursor.execute("SET PARQUET_FALLBACK_SCHEMA_RESOLUTION=name")
-
-    # 임시 테이블에서 데이터 복사
     cols = [str_value.split()[0].strip() for str_value in col_names]
     col_names_str = ",\n\t".join(cols)
 
-    sql = f"""
-        MERGE INTO {DB_NAME}.{TABLE_NAME} TARGET
-        USING tmp.{table_name} AS SOURCE
-        ON TARGET.ds_timestamp = SOURCE.ds_timestamp
-        WHEN MATCHED THEN
-            UPDATE SET
-                {',\n\t'.join([f"TARGET.{col} = SOURCE.{col}" for col in cols])}
-        WHEN NOT MATCHED THEN
-            INSERT ({col_names_str})
-            VALUES ({',\n\t'.join([f"SOURCE.{col}" for col in cols])})
-    """
+    try:
+        conn = ImpalaConnection().conn
+        cursor = conn.cursor()
+        cursor.execute("SET PARQUET_FALLBACK_SCHEMA_RESOLUTION=name")
 
-    # sql = f"""
-    #     INSERT INTO {DB_NAME}.{TABLE_NAME} ({col_names_str})
-    #     SELECT {col_names_str} FROM tmp.{tmp_tbl_name}
-    #     ORDER BY ds_timestamp
-    # """
-    # logger.debug(sql)
-    cursor.execute(sql)
+        # 임시 테이블에서 데이터 복사
+        sql = f"""
+            MERGE INTO {DB_NAME}.{TABLE_NAME} TARGET
+            USING tmp.{table_name} AS SOURCE
+            ON TARGET.ds_timestamp = SOURCE.ds_timestamp
+            WHEN MATCHED THEN
+                UPDATE SET
+                    {',\n\t'.join([f"TARGET.{col} = SOURCE.{col}" for col in cols])}
+            WHEN NOT MATCHED THEN
+                INSERT ({col_names_str})
+                VALUES ({',\n\t'.join([f"SOURCE.{col}" for col in cols])})
+        """
 
-    logger.info(f"   - merge the temporary table 'tmp.{table_name}'.")
-    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}' (sec)")
+        # sql = f"""
+        #     INSERT INTO {DB_NAME}.{TABLE_NAME} ({col_names_str})
+        #     SELECT {col_names_str} FROM tmp.{tmp_tbl_name}
+        #     ORDER BY ds_timestamp
+        # """
+        # logger.debug(sql)
+        cursor.execute(sql)
+
+        logger.info(f"   - merge the temporary table 'tmp.{table_name}'.")
+        logger.info(f"     * elapsed time: {perf_counter() - start:.2f} (sec)")
+    except Exception as e:
+        logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
+        raise e
 
     return
 
@@ -138,21 +150,25 @@ def drop_tmp_table(params: dict[str, str]):
     table_name = params["tbl_name"]
     location = params["location"]
 
-    conn = ImpalaConnection().conn
-    cursor = conn.cursor()
+    try:
+        conn = ImpalaConnection().conn
+        cursor = conn.cursor()
 
-    # 임시 테이블 및 데이터 파일 삭제
-    # ## 임시 데이터 파일 삭제
-    if abfs.exists(location):
-        abfs.rm(location, recursive=True)
-        logger.debug(f"  - Delete the temporary file '{location}'.")
+        # 임시 테이블 및 데이터 파일 삭제
+        # ## 임시 데이터 파일 삭제
+        if abfs.exists(location):
+            abfs.rm(location, recursive=True)
+            logger.debug(f"  - Delete the temporary file '{location}'.")
 
-    ## 임시 테이블 삭제
-    cursor.execute(f"DROP TABLE IF EXISTS tmp.{table_name}")
-    logger.debug(f"  - Drop the temporary table.")
+        ## 임시 테이블 삭제
+        cursor.execute(f"DROP TABLE IF EXISTS tmp.{table_name}")
+        logger.debug(f"  - Drop the temporary table.")
 
-    logger.info(f"   - drop the temporary table 'tmp.{table_name}'.")
-    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}' (sec)")
+        logger.info(f"   - drop the temporary table 'tmp.{table_name}'.")
+        logger.info(f"     * elapsed time: {perf_counter() - start:.2f} (sec)")
+    except Exception as e:
+        logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
+        raise e
 
     return
 
@@ -234,14 +250,18 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
         )
     """
 
-    cursor = connection.conn.cursor()
-    cursor.execute(sql)
+    try:
+        cursor = connection.conn.cursor()
+        cursor.execute(sql)
 
-    rs = cursor.fetchall()
-    for row in rs:
-        logger.debug(f"  - {row[0]}")
+        rs = cursor.fetchall()
+        for row in rs:
+            logger.debug(f"  - {row[0]}")
 
-    logger.info(f"   - elapsed time: {perf_counter() - start: .2f} (sec)")
+        logger.info(f"   - elapsed time: {perf_counter() - start: .2f} (sec)")
+    except Exception as e:
+        logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
+        raise e
 
     return cols
 
@@ -341,6 +361,9 @@ def query_data(
 
 
 def main():
+    # configuration 출력
+    config.display()
+
     # 메타데이터 읽기
     metadata_list = read_metadata(f"resources/csv/{config.hull}_metadata.csv")
 
@@ -359,7 +382,6 @@ if __name__ == "__main__":
     start = perf_counter()
     sep = "-" * 80
     logger.info(f"{sep}")
-    logger.info("🚀")
 
     main()
 
