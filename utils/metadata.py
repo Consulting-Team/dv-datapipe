@@ -3,7 +3,6 @@ import polars as pl
 from dataclasses import dataclass
 from jmlogger import logger
 
-
 @dataclass
 class MetaData:
     col_name: str
@@ -17,6 +16,7 @@ class MetaData:
 
 ### CSV 파일을 읽어 column 메타정보 반환
 def read_metadata(path: str) -> dict[str, MetaData]:
+    logger.info(f"👉 Read the meatadata from '{path}'.")
     keywords = ["cams", "ias", "ams", "vdr"]
 
     df = pl.read_csv(path)

@@ -6,6 +6,7 @@ from connection import ImpalaConnection, abfs
 from utils.metadata import read_metadata, MetaData, get_db_name
 from functools import reduce
 from time import perf_counter
+from typing import Any
 import polars as pl
 
 # 테이블이 생성될 DB
@@ -44,81 +45,227 @@ def clear_table():
     logger.info(f"clear_table(): {perf_counter() - start: .2f} sec")
 
 
-def insert_data(
-    col_names: list[str], metadata_dict: dict[str, MetaData], start: str, end: str
-):
-    start_time = perf_counter()
+# def create_temporary_table(tbl_name: str, df: pl.DataFrame, location: str, col_names: list[str]):
+def create_temporary_table(params: dict[str, Any]):
+    # 임시 테이블 생성
+    start = perf_counter()
+    tbl_name = params["tbl_name"]
+    col_names = params["col_names"]
+    location = params["location"]
+    parquet_path = params["parquet_path"]
+    df = params["df"]
+
     conn = ImpalaConnection().conn
     cursor = conn.cursor()
-    cursor.execute("SET PARQUET_FALLBACK_SCHEMA_RESOLUTION=name")
-
-    # 임시 parquet 저장위치 설정
-    base = get_storage_location().replace(f"/{config.hull}/", "")
-    tmp_dir = f"{str(base)}/tmpdata"
-    tmp_parquet_path = f"{tmp_dir}/{start}_{end}.parquet"
-
-    # source table에서 데이터 쿼리
-    df = query_data(metadata_dict=metadata_dict, start=start, end=end)
-    df = df.with_columns(pl.from_epoch("ds_timestamp", time_unit="ms"))
 
     # 임시 테이블 생성
-    ## 임시 테이블 이름
-    tmp_tbl_name = f"{config.hull}_{start}_{end}"
-
     ## parquet 저장 경로 생성
-    if not abfs.exists(tmp_dir):
-        abfs.makedirs(tmp_dir, exist_ok=True)
-        logger.debug(f"Temporary Dataframe has been copied to '{tmp_dir}'.")
+    if not abfs.exists(location):
+        abfs.makedirs(location, exist_ok=True)
+        logger.debug(f"  - Temporary Dataframe has been copied to '{location}'.")
 
     ## Azure에 parquet 저장
     df.write_parquet(
-        tmp_parquet_path,
+        parquet_path,
         storage_options={
             "account_name": config.hs4v1_abfs_strg_acc,
             "account_key": config.hs4v1_abfs_strg_key,
         },
     )
 
-    ## 임시 테이블 생성 및 파티션 연결
-    ### 동일한 테이블 이름이 있으면 삭제
-    cursor.execute(f"DROP TABLE IF EXISTS tmp.{tmp_tbl_name}")
+    cursor.execute(f"DROP TABLE IF EXISTS tmp.{tbl_name}")
 
-    ### sql 문작성
+    ### 테이블 생성 sql 문작성
     sql = f"""
-        CREATE EXTERNAL TABLE tmp.{tmp_tbl_name} (
+        CREATE EXTERNAL TABLE tmp.{tbl_name} (
             {',\n\t'.join(col_names)}
         )
         STORED AS PARQUET
-        LOCATION '{tmp_dir}'
+        LOCATION '{location}'
     """
     cursor.execute(sql)
 
+    logger.info("   - crate the temporary table 'tmp.{table_name}'.")
+    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}'.")
+
+    return
+
+
+def merge_tables(params: dict[str, Any]):
+    # 임시 테이블의 데이터를 target 테이블로 복사
+    start = perf_counter()
+    col_names = params["col_names"]
+    table_name = params["tbl_name"]
+
+    conn = ImpalaConnection().conn
+    cursor = conn.cursor()
+    cursor.execute("SET PARQUET_FALLBACK_SCHEMA_RESOLUTION=name")
+
     # 임시 테이블에서 데이터 복사
-    col_names_str = ",\n\t".join(
-        [str_value.split()[0].strip() for str_value in col_names]
-    )
+    cols = [str_value.split()[0].strip() for str_value in col_names]
+    col_names_str = ",\n\t".join(cols)
+
     sql = f"""
-        INSERT INTO {DB_NAME}.{TABLE_NAME} ({col_names_str})
-        SELECT {col_names_str} FROM tmp.{tmp_tbl_name}
-        ORDER BY ds_timestamp
+        MERGE INTO {DB_NAME}.{TABLE_NAME} TARGET
+        USING tmp.{table_name} AS SOURCE
+        ON TARGET.ds_timestamp = SOURCE.ds_timestamp
+        WHEN MATCHED THEN
+            UPDATE SET
+                {',\n\t'.join([f"TARGET.{col} = SOURCE.{col}" for col in cols])}
+        WHEN NOT MATCHED THEN
+            INSERT ({col_names_str})
+            VALUES ({',\n\t'.join([f"SOURCE.{col}" for col in cols])})
     """
-    logger.debug(sql)
+
+    # sql = f"""
+    #     INSERT INTO {DB_NAME}.{TABLE_NAME} ({col_names_str})
+    #     SELECT {col_names_str} FROM tmp.{tmp_tbl_name}
+    #     ORDER BY ds_timestamp
+    # """
+    # logger.debug(sql)
     cursor.execute(sql)
+
+    logger.info("   - merge the temporary table 'tmp.{table_name}'.")
+    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}'.")
+
+    return
+
+
+def drop_tmp_table(params: dict[str, str]):
+    # 임시 테이블 삭제
+    start = perf_counter()
+    table_name = params["tbl_name"]
+    location = params["location"]
+
+    conn = ImpalaConnection().conn
+    cursor = conn.cursor()
 
     # 임시 테이블 및 데이터 파일 삭제
     # ## 임시 데이터 파일 삭제
-    if abfs.exists(tmp_dir):
-        abfs.rm(tmp_dir, recursive=True)
+    if abfs.exists(location):
+        abfs.rm(location, recursive=True)
+        logger.debug(f"  - Delete the temporary file '{location}'.")
 
     ## 임시 테이블 삭제
-    cursor.execute(f"DROP TABLE IF EXISTS tmp.{tmp_tbl_name}")
+    cursor.execute(f"DROP TABLE IF EXISTS tmp.{table_name}")
+    logger.debug(f"  - Drop the temporary table.")
 
-    logger.info(f"insert_data(): {perf_counter() - start_time: .2f} sec")
+    logger.info("   - drop the temporary table 'tmp.{table_name}'.")
+    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}'.")
+
+    return
+
+
+def insert_data(
+    col_names: list[str], metadata_dict: dict[str, MetaData], start: str, end: str
+):
+    logger.info(f"👉 Insert the data into '{DB_NAME}.{TABLE_NAME}'")
+    # start_time = perf_counter()
+
+    conn = ImpalaConnection().conn
+    cursor = conn.cursor()
+    # cursor.execute("SET PARQUET_FALLBACK_SCHEMA_RESOLUTION=name")
+
+    # 임시 parquet 저장위치 설정
+    base = get_storage_location().replace(f"/{config.hull}/", "")
+    tmp_dir = f"{str(base)}/tmpdata"
+    tmp_parquet_path = f"{tmp_dir}/{start}_{end}.parquet"
+    tmp_tbl_name = f"{config.hull}_{start}_{end}"
+
+    # source table에서 데이터 쿼리
+    df = query_data(metadata_dict=metadata_dict, start=start, end=end)
+    df = df.with_columns(pl.from_epoch("ds_timestamp", time_unit="ms"))
+
+    # # 임시 테이블 생성
+    # ## 임시 테이블 이름
+
+    # ## parquet 저장 경로 생성
+    # if not abfs.exists(tmp_dir):
+    #     abfs.makedirs(tmp_dir, exist_ok=True)
+    #     logger.debug(f"Temporary Dataframe has been copied to '{tmp_dir}'.")
+
+    # ## Azure에 parquet 저장
+    # df.write_parquet(
+    #     tmp_parquet_path,
+    #     storage_options={
+    #         "account_name": config.hs4v1_abfs_strg_acc,
+    #         "account_key": config.hs4v1_abfs_strg_key,
+    #     },
+    # )
+
+    # ## 임시 테이블 생성 및 파티션 연결
+    # ### 동일한 테이블 이름이 있으면 삭제
+    # cursor.execute(f"DROP TABLE IF EXISTS tmp.{tmp_tbl_name}")
+
+    # ### sql 문작성
+    # sql = f"""
+    #     CREATE EXTERNAL TABLE tmp.{tmp_tbl_name} (
+    #         {',\n\t'.join(col_names)}
+    #     )
+    #     STORED AS PARQUET
+    #     LOCATION '{tmp_dir}'
+    # """
+    # cursor.execute(sql)
+
+    create_temporary_table(
+        {
+            "tbl_name": tmp_tbl_name,
+            "col_names": col_names,
+            "location": tmp_dir,
+            "parquet_path": tmp_parquet_path,
+            "df": df,
+        }
+    )
+
+    # # 임시 테이블에서 데이터 복사
+    # cols = [str_value.split()[0].strip() for str_value in col_names]
+    # col_names_str = ",\n\t".join(cols)
+
+    # sql = f"""
+    #     MERGE INTO {DB_NAME}.{TABLE_NAME} TARGET
+    #     USING tmp.{tmp_tbl_name} AS SOURCE
+    #     ON TARGET.ds_timestamp = SOURCE.ds_timestamp
+    #     WHEN MATCHED THEN
+    #         UPDATE SET
+    #             {',\n\t'.join([f"TARGET.{col} = SOURCE.{col}" for col in cols])}
+    #     WHEN NOT MATCHED THEN
+    #         INSERT ({col_names_str})
+    #         VALUES ({',\n\t'.join([f"SOURCE.{col}" for col in cols])})
+    # """
+
+    # # sql = f"""
+    # #     INSERT INTO {DB_NAME}.{TABLE_NAME} ({col_names_str})
+    # #     SELECT {col_names_str} FROM tmp.{tmp_tbl_name}
+    # #     ORDER BY ds_timestamp
+    # # """
+    # # logger.debug(sql)
+    # cursor.execute(sql)
+
+    merge_tables({"col_names": col_names, "tbl_name": tmp_tbl_name})
+
+    drop_tmp_table({"tbl_name": tmp_tbl_name, "location": tmp_dir})
+
+    # # 임시 테이블 및 데이터 파일 삭제
+    # # ## 임시 데이터 파일 삭제
+    # if abfs.exists(tmp_dir):
+    #     abfs.rm(tmp_dir, recursive=True)
+    #     logger.debug(f"  - Delete the temporary file of '{tmp_dir}'.")
+
+    # ## 임시 테이블 삭제
+    # cursor.execute(f"DROP TABLE IF EXISTS tmp.{tmp_tbl_name}")
+    # logger.debug(f"  - Drop the temporary table.")
+
+    # logger.info(
+    #     f"   - total elapsed time to insert data: {perf_counter() - start_time: .2f} (sec)"
+    # )
+
 
 def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
     # Iceberg 테이블 생성
     # 생성된 테이블의 열을 배열로 반환
     start = perf_counter()
+    logger.info(f"👉 Create an iceberg table named '{DB_NAME}.{TABLE_NAME}'.")
+
     table_name = f"{DB_NAME}.{TABLE_NAME}"
     connection = ImpalaConnection()
 
@@ -160,9 +307,9 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
 
     rs = cursor.fetchall()
     for row in rs:
-        logger.debug(row[0])
+        logger.debug(f"  - {row[0]}")
 
-    logger.info(f"create_iceberg_table(): {perf_counter() - start: .2f} sec")
+    logger.info(f"   - elapsed time: {perf_counter() - start: .2f} (sec)")
 
     return cols
 
@@ -172,6 +319,8 @@ def query_data(
 ) -> pl.DataFrame:
     # 기존 테이블에서 데이터 쿼리
     start_time = perf_counter()
+    logger.info(f"   - query data from '{start}' to '{end}'")
+
     conn = ImpalaConnection()
     df_set = dict()
 
@@ -181,7 +330,9 @@ def query_data(
         tags = [f"CAST(CAST(ds_timestamp    AS    DOUBLE) AS BIGINT) AS ds_timestamp"]
 
         if not metadata_list:
-            logger.warning(f"Empty metadata list - {table_name}. Skip to next table.")
+            logger.warning(
+                f"- ⚠️ Empty metadata list - {table_name}. Skip to next table."
+            )
             continue
 
         db_name = get_db_name(metadata_dict)
@@ -212,6 +363,8 @@ def query_data(
 
         # 데이터 쿼리
         df = conn.query_polars(sql=sql)
+        logger.info(f"     * table: {table_name}")
+
         # 32비트 변수로 변경
         df = df.with_columns(
             [
@@ -221,7 +374,9 @@ def query_data(
         )
 
         if df.is_empty():
-            logger.warning(f"The query result set for table '{table_name}' is empty.")
+            logger.warning(
+                f"  * ⚠️ The query result set for table '{table_name}' is empty."
+            )
 
         # tag 이름 column 이름으로 맵핑
         df = df.rename(col_map)
@@ -240,14 +395,15 @@ def query_data(
 
         df_set[table_name] = synced_df
 
-        combined_df = reduce(
-            lambda left, right: left.join(right, on="time_sync", how="left"),
-            list(df_set.values()),
-        ).with_columns(
-            pl.col("time_sync").cast(pl.Int64).alias("ds_timestamp"),
-        )
+    # 데이터프레임 조인
+    combined_df = reduce(
+        lambda left, right: left.join(right, on="time_sync", how="left"),
+        list(df_set.values()),
+    ).with_columns(
+        pl.col("time_sync").cast(pl.Int64).alias("ds_timestamp"),
+    )
 
-    logger.info(f"query_data(): {perf_counter() - start_time: .2f} sec")
+    logger.info(f"     * elapsed time: {perf_counter() - start_time: .2f} (sec)")
 
     return combined_df
 
@@ -262,13 +418,17 @@ def main():
     # Iceberg 테이블 생성
     col_names = create_iceberg_table(metadata_list)
 
-    insert_data(col_names, metadata_list, start="20260101", end="20260301")
-    insert_data(col_names, metadata_list, start="20260302", end="20260320")
+    insert_data(col_names, metadata_list, start="20260101", end="20260102")
+    # insert_data(col_names, metadata_list, start="20260101", end="20260301")
+    # insert_data(col_names, metadata_list, start="20260302", end="20260320")
 
 
 if __name__ == "__main__":
     start = perf_counter()
+    sep = "-" * 30
+    logger.info(f"{sep} Program started {sep}")
 
     main()
 
     logger.info(f"elapsed time: {perf_counter() - start: .2f} sec")
+    logger.info(f"{sep} Program ended {sep}")

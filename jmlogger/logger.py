@@ -8,7 +8,7 @@ __all__ = ["logger"]
 
 
 def _init_logger() -> _logging.Logger:
-    global _fname
+    # global _fname
 
     # 로그 파일 저장 폴더 생성
     log_dir = "logs"
@@ -25,7 +25,7 @@ def _init_logger() -> _logging.Logger:
     )
 
     coloredFormatter = _colorlog.ColoredFormatter(
-        "%(log_color)s%(asctime)s [%(levelname)s] %(message)s [%(filename)s:%(lineno)d]",
+        "%(log_color)s%(asctime)s [%(levelname)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         log_colors={
             "DEBUG": "cyan",
@@ -49,7 +49,7 @@ def _init_logger() -> _logging.Logger:
         # 콘솔 핸들러 세팅
         console_handler = _logging.StreamHandler()
         console_handler.setFormatter(coloredFormatter)
-        console_handler.setLevel(_logging.DEBUG)
+        console_handler.setLevel(_logging.INFO)
 
         # 로거에 헨들러 추가
         logger.addHandler(console_handler)
