@@ -1,17 +1,20 @@
-import __main__
+# import __main__
 import os as _os
 import colorlog as _colorlog
 import logging as _logging
+from pathlib import Path
 
-log_fname = _os.path.basename(__main__.__file__) + ".log"
 __all__ = ["logger"]
 
 
-def _init_logger() -> _logging.Logger:
-    # global _fname
+def get_logger(fname: str) -> _logging.Logger:
+    global logger
+
+    log_path = Path(fname)
+    log_dir = log_path.parent
+    log_fname = log_path.name
 
     # 로그 파일 저장 폴더 생성
-    log_dir = "logs"
     if not _os.path.exists(log_dir):
         _os.mkdir(log_dir)
 
@@ -20,6 +23,7 @@ def _init_logger() -> _logging.Logger:
 
     # 로그 포맷 설정
     formatter = _logging.Formatter(
+        # "%(asctime)s [%(levelname)s] %(message)s [%(filename)s:%(lineno)d]",
         "%(asctime)s [%(levelname)s] %(message)s [%(filename)s:%(lineno)d]",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
@@ -56,6 +60,3 @@ def _init_logger() -> _logging.Logger:
         logger.addHandler(file_handler)
 
     return logger
-
-
-logger: _logging.Logger | None = _init_logger()

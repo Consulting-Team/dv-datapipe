@@ -1,7 +1,10 @@
 import csv
 import polars as pl
+from config import config
 from dataclasses import dataclass
-from jmlogger import logger
+# from jmlogger import logger
+
+logger = config.logger
 
 @dataclass
 class MetaData:

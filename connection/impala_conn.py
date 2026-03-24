@@ -1,14 +1,12 @@
 import atexit
 import polars as pl
-# import json
 from config import config
-from jmlogger import logger as logger
 from impala.hiveserver2 import HiveServer2Connection
 from impala.dbapi import connect
-# from connection.abfs_conn import abfs
 
 __all__ = ["ImpalaConnection"]
 
+logger = config.logger
 
 class ImpalaConnection:
     def __init__(self):
@@ -33,77 +31,6 @@ class ImpalaConnection:
                 logger.error(e)
                 continue
         cursor.close()
-
-    # def create_external_iceberg_table(self, params: dict[str, str]):
-    #     conn = self.conn
-    #     db_name: str = params["db_name"]
-    #     table_name: str = params["table_name"]
-    #     schema: dict = params["schema"]
-    #     location = params["location"]
-    #     cols = list()
-    #     mapping = list()
-
-    #     if abfs.exists(f"{location}/metadata/"):
-    #         abfs.rm(f"{location}/metadata/", recursive=True)
-
-    #     for (i, (k, v)) in enumerate(schema.items()):
-    #         mapping.append({"id": (i + 1), "names": [k]})
-
-    #         match v:
-    #             case pl.Float32 | pl.Float32 | pl.Float64:
-    #                 cols.append(f"{k} DOUBLE")
-    #             case pl.Int8 | pl.Int16 | pl.Int32 | pl.Int64 | pl.Int128:
-    #                 cols.append(f"{k} INTEGER")
-    #             case pl.Boolean:
-    #                 cols.append(f"{k} BOOLEAN")
-    #             case _:
-    #                 logger.error("지원되지 않는 데이터 타입")
-
-    #     # sql문 작성
-    #     cols = ",".join(cols)
-    #     sql = f"""
-    #         CREATE TABLE IF NOT EXISTS {db_name}.{table_name} ({cols})
-    #         PARTITIONED BY (dt INTEGER)
-    #         STORED AS ICEBERG
-    #         LOCATION '{location}'
-    #         TBLPROPERTIES (
-    #             'format-version'='2',
-    #             'write.format.default'='parquet'
-    #         )
-    #     """
-    #     # sql_properties = f"""
-    #     #     ALTER TABLE {db_name}.{table_name}
-    #     #     SET TBLPROPERTIES (
-    #     #         'schema.name-mapping.default'='{json.dumps(mapping)}',
-    #     #         'write.parquet.field-id.enabled' = 'true'
-    #     #     );
-    #     # """
-
-    #     try:
-    #         cursor = conn.cursor()
-    #         cursor.execute(sql)
-    #         logger.debug(f"SQL: {sql}")
-    #         rs = cursor.fetchall()
-
-    #         # cursor.execute(f"ALTER TABLE {db_name}.{table_name} RECOVER PARTITIONS")
-
-    #         # 이 테이블을 Iceberg 형식으로 변환 (여기서 metadata/ 폴더가 자동 생성됨)
-    #         # cursor.execute(f"ALTER TABLE {db_name}.{table_name} CONVERT TO ICEBERG")
-    #         # cursor.execute(f"ALTER TABLE {db_name}.{table_name} EXECUTE add_files(`location`='{location}')")
-
-    #         # cursor.execute(sql_properties)
-    #         # logger.debug(f"SQL: {sql_properties}")
-
-    #         # cursor.execute(f"REFRESH {db_name}.{table_name}")
-
-    #         for row in rs:
-    #             logger.info(row[0])
-    #     except Exception as e:
-    #         logger.error(e)
-    #         raise e
-    #     finally:
-    #         if cursor:
-    #             cursor.close
 
     def create_external_table(self, params: dict, idx_access: bool = True):
         conn = self.conn
@@ -217,7 +144,9 @@ class ImpalaConnection:
             else:
                 # 일반적인 쿼리 (SHOW TABLES 등)
                 rows = cursor.fetchall()
-                return pl.DataFrame(rows, schema=columns, orient="row", infer_schema_length=None)
+                return pl.DataFrame(
+                    rows, schema=columns, orient="row", infer_schema_length=None
+                )
         except Exception as e:
             logger.error(f"Impala query error: '{e}'\nSQL: {sql}")
             raise e

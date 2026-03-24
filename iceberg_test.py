@@ -1,7 +1,6 @@
 #! H2521호선 iceberg 테이블 생성 테스트
 
 from config import config
-from jmlogger import logger
 from connection import ImpalaConnection, abfs
 from utils.metadata import read_metadata, MetaData, get_db_name
 from functools import reduce
@@ -13,6 +12,8 @@ import polars as pl
 DB_NAME = "tmp"
 # 새로 생성할 테이블 이름
 TABLE_NAME = f"{config.hull}_iceberg_test"
+
+logger = config.logger
 
 
 def get_storage_location() -> str:
@@ -26,6 +27,7 @@ def get_storage_location() -> str:
 
 def clear_table():
     # 테이블 및 오브젝트 스토리지 데이터 삭제
+    logger.info(f"👉 Clear exsiting table '{DB_NAME}.{TABLE_NAME}'.")
     start = perf_counter()
 
     connection = ImpalaConnection()
@@ -42,14 +44,13 @@ def clear_table():
     if abfs.exists(location):
         abfs.rm(location, recursive=True)
 
-    logger.info(f"clear_table(): {perf_counter() - start: .2f} sec")
+    logger.info(f"   - elapsed time: {perf_counter() - start: .2f} (sec)")
 
 
-# def create_temporary_table(tbl_name: str, df: pl.DataFrame, location: str, col_names: list[str]):
 def create_temporary_table(params: dict[str, Any]):
     # 임시 테이블 생성
     start = perf_counter()
-    tbl_name = params["tbl_name"]
+    table_name = params["tbl_name"]
     col_names = params["col_names"]
     location = params["location"]
     parquet_path = params["parquet_path"]
@@ -73,11 +74,11 @@ def create_temporary_table(params: dict[str, Any]):
         },
     )
 
-    cursor.execute(f"DROP TABLE IF EXISTS tmp.{tbl_name}")
+    cursor.execute(f"DROP TABLE IF EXISTS tmp.{table_name}")
 
     ### 테이블 생성 sql 문작성
     sql = f"""
-        CREATE EXTERNAL TABLE tmp.{tbl_name} (
+        CREATE EXTERNAL TABLE tmp.{table_name} (
             {',\n\t'.join(col_names)}
         )
         STORED AS PARQUET
@@ -85,8 +86,8 @@ def create_temporary_table(params: dict[str, Any]):
     """
     cursor.execute(sql)
 
-    logger.info("   - crate the temporary table 'tmp.{table_name}'.")
-    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}'.")
+    logger.info(f"   - create the temporary table 'tmp.{table_name}'.")
+    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}' (sec)")
 
     return
 
@@ -125,8 +126,8 @@ def merge_tables(params: dict[str, Any]):
     # logger.debug(sql)
     cursor.execute(sql)
 
-    logger.info("   - merge the temporary table 'tmp.{table_name}'.")
-    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}'.")
+    logger.info(f"   - merge the temporary table 'tmp.{table_name}'.")
+    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}' (sec)")
 
     return
 
@@ -150,8 +151,8 @@ def drop_tmp_table(params: dict[str, str]):
     cursor.execute(f"DROP TABLE IF EXISTS tmp.{table_name}")
     logger.debug(f"  - Drop the temporary table.")
 
-    logger.info("   - drop the temporary table 'tmp.{table_name}'.")
-    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}'.")
+    logger.info(f"   - drop the temporary table 'tmp.{table_name}'.")
+    logger.info(f"     * elapsed time: {perf_counter() - start:.2f}' (sec)")
 
     return
 
@@ -160,11 +161,6 @@ def insert_data(
     col_names: list[str], metadata_dict: dict[str, MetaData], start: str, end: str
 ):
     logger.info(f"👉 Insert the data into '{DB_NAME}.{TABLE_NAME}'")
-    # start_time = perf_counter()
-
-    conn = ImpalaConnection().conn
-    cursor = conn.cursor()
-    # cursor.execute("SET PARQUET_FALLBACK_SCHEMA_RESOLUTION=name")
 
     # 임시 parquet 저장위치 설정
     base = get_storage_location().replace(f"/{config.hull}/", "")
@@ -177,36 +173,6 @@ def insert_data(
     df = df.with_columns(pl.from_epoch("ds_timestamp", time_unit="ms"))
 
     # # 임시 테이블 생성
-    # ## 임시 테이블 이름
-
-    # ## parquet 저장 경로 생성
-    # if not abfs.exists(tmp_dir):
-    #     abfs.makedirs(tmp_dir, exist_ok=True)
-    #     logger.debug(f"Temporary Dataframe has been copied to '{tmp_dir}'.")
-
-    # ## Azure에 parquet 저장
-    # df.write_parquet(
-    #     tmp_parquet_path,
-    #     storage_options={
-    #         "account_name": config.hs4v1_abfs_strg_acc,
-    #         "account_key": config.hs4v1_abfs_strg_key,
-    #     },
-    # )
-
-    # ## 임시 테이블 생성 및 파티션 연결
-    # ### 동일한 테이블 이름이 있으면 삭제
-    # cursor.execute(f"DROP TABLE IF EXISTS tmp.{tmp_tbl_name}")
-
-    # ### sql 문작성
-    # sql = f"""
-    #     CREATE EXTERNAL TABLE tmp.{tmp_tbl_name} (
-    #         {',\n\t'.join(col_names)}
-    #     )
-    #     STORED AS PARQUET
-    #     LOCATION '{tmp_dir}'
-    # """
-    # cursor.execute(sql)
-
     create_temporary_table(
         {
             "tbl_name": tmp_tbl_name,
@@ -218,46 +184,12 @@ def insert_data(
     )
 
     # # 임시 테이블에서 데이터 복사
-    # cols = [str_value.split()[0].strip() for str_value in col_names]
-    # col_names_str = ",\n\t".join(cols)
-
-    # sql = f"""
-    #     MERGE INTO {DB_NAME}.{TABLE_NAME} TARGET
-    #     USING tmp.{tmp_tbl_name} AS SOURCE
-    #     ON TARGET.ds_timestamp = SOURCE.ds_timestamp
-    #     WHEN MATCHED THEN
-    #         UPDATE SET
-    #             {',\n\t'.join([f"TARGET.{col} = SOURCE.{col}" for col in cols])}
-    #     WHEN NOT MATCHED THEN
-    #         INSERT ({col_names_str})
-    #         VALUES ({',\n\t'.join([f"SOURCE.{col}" for col in cols])})
-    # """
-
-    # # sql = f"""
-    # #     INSERT INTO {DB_NAME}.{TABLE_NAME} ({col_names_str})
-    # #     SELECT {col_names_str} FROM tmp.{tmp_tbl_name}
-    # #     ORDER BY ds_timestamp
-    # # """
-    # # logger.debug(sql)
-    # cursor.execute(sql)
-
     merge_tables({"col_names": col_names, "tbl_name": tmp_tbl_name})
 
+    # # 임시 테이블 및 데이터 파일 삭제
     drop_tmp_table({"tbl_name": tmp_tbl_name, "location": tmp_dir})
 
-    # # 임시 테이블 및 데이터 파일 삭제
-    # # ## 임시 데이터 파일 삭제
-    # if abfs.exists(tmp_dir):
-    #     abfs.rm(tmp_dir, recursive=True)
-    #     logger.debug(f"  - Delete the temporary file of '{tmp_dir}'.")
-
-    # ## 임시 테이블 삭제
-    # cursor.execute(f"DROP TABLE IF EXISTS tmp.{tmp_tbl_name}")
-    # logger.debug(f"  - Drop the temporary table.")
-
-    # logger.info(
-    #     f"   - total elapsed time to insert data: {perf_counter() - start_time: .2f} (sec)"
-    # )
+    return
 
 
 def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
@@ -425,10 +357,11 @@ def main():
 
 if __name__ == "__main__":
     start = perf_counter()
-    sep = "-" * 30
-    logger.info(f"{sep} Program started {sep}")
+    sep = "-" * 80
+    logger.info(f"{sep}")
+    logger.info("🚀")
 
     main()
 
-    logger.info(f"elapsed time: {perf_counter() - start: .2f} sec")
-    logger.info(f"{sep} Program ended {sep}")
+    logger.info(f"👀 Elapsed time: {perf_counter() - start: .2f} (sec)")
+    logger.info(f"{sep}")

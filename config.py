@@ -1,15 +1,16 @@
 from dataclasses import dataclass
 from datetime import date
-from jmlogger import logger
+from jmlogger import get_logger
 from dotenv import load_dotenv
+from logging import Logger
 import os
 import argparse
-
 
 @dataclass
 class Config:
     hull: str
     date: date
+    logger: Logger
 
     # impala 연결정보
     impala_host: str | None
@@ -25,13 +26,16 @@ class Config:
 
 
 def _initiaize() -> Config:
-    global config
+    global config, logger
+
+    # .env 정보 읽기
+    load_dotenv(override=False)
 
     # arguments 파싱
     args = _parse_args()
 
-    # .env 정보 읽기
-    load_dotenv(override=False)
+    # logger 이름
+    logger = get_logger(f"logs/{args.hull}_iceberg_test.log")
 
     # config object 구성
     config = Config(
@@ -45,6 +49,7 @@ def _initiaize() -> Config:
         impala_port=os.getenv("IMPALA_PORT"),
         impala_user=os.getenv("IMPALA_USER"),
         impala_pwd=os.getenv("IMPALA_PWD"),
+        logger=logger,
     )
 
     return config
