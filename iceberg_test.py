@@ -7,7 +7,6 @@ from functools import reduce
 from time import perf_counter
 from typing import Any
 import polars as pl
-import polars.selectors as cs
 import inspect
 
 # 테이블이 생성될 DB
@@ -189,8 +188,7 @@ def insert_data(
 
     # source table에서 데이터 쿼리
     df = query_data(metadata_dict=metadata_dict, start=start, end=end)
-    # df = df.with_columns(pl.from_epoch("ds_timestamp", time_unit="ms"))
-    # df = df.with_columns(pl.from_epoch(cs.contains("id_"), time_unit="ms"))
+    df = df.with_columns(pl.from_epoch("ds_timestamp", time_unit="ms"))
 
     # # 임시 테이블 생성
     create_temporary_table(
@@ -234,10 +232,7 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
             for m in metadata_list
         ]
     )
-    # cols.extend([f"id_{table_name}    BIGINT" for table_name in metadata_dict.keys()])
-    cols.extend(
-        [f"id_{table_name}    TIMESTAMP" for table_name in metadata_dict.keys()]
-    )
+    cols.extend([f"id_{table_name}    BIGINT" for table_name in metadata_dict.keys()])
     cols_str = ",\n".join(cols)
 
     # iceberg 테이블 생성 sql
@@ -326,7 +321,6 @@ def query_data(
         logger.info(f"     * table: {table_name}")
 
         # 32비트 변수로 변경
-        # todo: 메타데이터에 정의된 데이터 타입 적용
         df = df.with_columns(
             [
                 pl.col(pl.Int64).exclude("ds_timestamp").cast(pl.Int32),
@@ -347,7 +341,6 @@ def query_data(
             df.with_columns(
                 pl.from_epoch(pl.col(f"id_{table_name}"), time_unit="ms")
                 .dt.round("15s")
-                .cast(pl.Datetime("ms"))
                 .alias("time_sync"),
             )
             .group_by("time_sync")
@@ -364,14 +357,6 @@ def query_data(
     ).with_columns(
         pl.col("time_sync").cast(pl.Int64).alias("ds_timestamp"),
     )
-
-    # ds_timestamp/id_{tbl_name}열 timestamp형으로 변환
-    combined_df: pl.DataFrame = combined_df.with_columns(
-        pl.from_epoch("ds_timestamp", time_unit="ms")
-    )
-    combined_df = combined_df.with_columns([
-        pl.from_epoch(f"id_{tbl_name}", time_unit="ms").dt.round("1s").cast(pl.Datetime("ms")) for tbl_name in metadata_dict.keys()
-    ])
 
     logger.info(f"     * elapsed time: {perf_counter() - start_time: .2f} (sec)")
 
