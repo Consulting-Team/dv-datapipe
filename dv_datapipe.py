@@ -14,17 +14,6 @@ DB_NAME = "tmp"
 # 새로 생성할 테이블 이름
 TABLE_NAME = f"{config.hull}_iceberg_test"
 
-# logger = config.logger
-
-
-# def get_storage_location() -> str:
-#     # 클라우드 테이블 저장 위치 반환
-#     container_name = config.hs4v1_abfs_strg_cont
-#     account_name = config.hs4v1_abfs_strg_acc
-#     location = f"abfss://{container_name}@{account_name}.dfs.core.windows.net/user/hive/hocean/hs4v2/{config.hull}/"
-
-#     return location
-
 
 def clear_table():
     # 테이블 및 오브젝트 스토리지 데이터 삭제
@@ -180,7 +169,6 @@ def insert_data(
     logger.info(f"👉 Insert the data into '{DB_NAME}.{TABLE_NAME}'")
 
     # 임시 parquet 저장위치 설정
-    # base = get_storage_location().replace(f"/{config.hull}/", "")
     base = config.storage_location.replace(f"/{config.hull}/", "")
     tmp_dir = f"{str(base)}/tmpdata"
     tmp_parquet_path = f"{tmp_dir}/{start}_{end}.parquet"
@@ -188,7 +176,6 @@ def insert_data(
 
     # source table에서 데이터 쿼리
     df = query_data(metadata_dict=metadata_dict, start=start, end=end)
-    df = df.with_columns(pl.from_epoch("ds_timestamp", time_unit="ms"))
 
     # # 임시 테이블 생성
     create_temporary_table(
@@ -294,13 +281,13 @@ def query_data(
 
         # 쿼리문 생성
         for m in metadata_list:
-            if "ds_timestamp" == m.col_name.lower():
-                continue
+            # if "ds_timestamp" == m.col_name.lower():
+            #     continue
 
-            # id 형 변환
-            if "id" == m.col_name.lower():
-                tags.append(f"CAST(CAST(ds_timestamp    AS    DOUBLE) AS BIGINT) AS id")
-                continue
+            # # id 형 변환
+            # if "id" == m.col_name.lower():
+            #     tags.append(f"CAST(CAST(ds_timestamp    AS    DOUBLE) AS BIGINT) AS id")
+            #     continue
 
             # 메타데이터 정의대로 형 변환
             tags.append(f"CAST({m.tag}    AS    {m.data_type})    AS    {m.tag}")
@@ -321,6 +308,7 @@ def query_data(
         logger.info(f"     * table: {table_name}")
 
         # 32비트 변수로 변경
+        # todo: 스키마 적용
         df = df.with_columns(
             [
                 pl.col(pl.Int64).exclude("ds_timestamp").cast(pl.Int32),
@@ -341,6 +329,7 @@ def query_data(
             df.with_columns(
                 pl.from_epoch(pl.col(f"id_{table_name}"), time_unit="ms")
                 .dt.round("15s")
+                .cast(pl.Datetime("ms"))
                 .alias("time_sync"),
             )
             .group_by("time_sync")
@@ -358,9 +347,33 @@ def query_data(
         pl.col("time_sync").cast(pl.Int64).alias("ds_timestamp"),
     )
 
+    # ds_timestamp 열 timestamp 형으로 변환
+    combined_df = combined_df.with_columns(
+        pl.from_epoch("ds_timestamp", time_unit="ms")
+    )
+
     logger.info(f"     * elapsed time: {perf_counter() - start_time: .2f} (sec)")
 
     return combined_df
+
+def get_schema(metadata_dict: dict[str, list[MetaData]]):
+    schema = dict()
+
+    for metadata_list in metadata_dict.values():
+        for m in metadata_list:
+            col_name = m.col_name
+            data_type = m.data_type
+            if data_type == "DOUBLE":
+                schema[col_name] = pl.Float64
+            if data_type == "INTEGER":
+                schema[col_name] = pl.Int32
+
+    for tbl_name in metadata_dict.keys():
+        schema[f"id_{tbl_name}"] = pl.Int32
+
+    schema["ds_timestamp"] = pl.Datetime
+
+    return schema
 
 
 def main():
