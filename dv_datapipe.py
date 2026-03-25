@@ -213,11 +213,13 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
     # column 정의
     cols = ["ds_timestamp    TIMESTAMP"]
     cols.extend(
-        [
-            f"{m.col_name}    {m.data_type}"
-            for metadata_list in metadata_dict.values()
-            for m in metadata_list
-        ]
+        sorted(
+            [
+                f"{m.col_name}    {m.data_type}"
+                for metadata_list in metadata_dict.values()
+                for m in metadata_list
+            ]
+        )
     )
     cols.extend([f"id_{table_name}    BIGINT" for table_name in metadata_dict.keys()])
     cols_str = ",\n".join(cols)
@@ -349,7 +351,7 @@ def main():
     metadata_list = read_metadata(f"resources/csv/{config.hull}_metadata.csv")
 
     # 기존 테이블 및 데이터 삭제
-    clear_table()
+    # clear_table()
 
     # Iceberg 테이블 생성
     col_names = create_iceberg_table(metadata_list)

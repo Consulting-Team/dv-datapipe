@@ -39,6 +39,14 @@ class MyUnitTest(unittest.TestCase):
         else:
             self.skipTest("No data found for the test period. Skipping assertion.")
 
+    def test_read_metadata(self):
+        """메타데이터 읽기 기능 검증"""
+
+        # 1. 메티데이터 읽기
+        metadata_path = f"resources/csv/{config.hull}_metadata.csv"
+        metadata_dict = read_metadata(metadata_path)
+
+        self.assertIsInstance(metadata_dict, dict, "The data type for schema must be dict.")
 
 if __name__ == "__main__":
     unittest.main(argv=[sys.argv[0]])

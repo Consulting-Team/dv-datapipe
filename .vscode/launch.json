@@ -11,7 +11,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--hull", "H2521", "--date", "2026-02-23"]
+            "args": ["--hull", "H2508", "--date", "2025-06-01"]
         }
     ]
 }
