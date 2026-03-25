@@ -2,7 +2,7 @@
 
 from config import config, logger
 from connection import ImpalaConnection, abfs
-from utils.metadata import read_metadata, MetaData, get_db_name
+from utils.metadata import read_metadata, MetaData, get_db_name, get_schema
 from functools import reduce
 from time import perf_counter
 from typing import Any
@@ -81,7 +81,7 @@ def create_temporary_table(params: dict[str, Any]):
         """
         cursor.execute(sql)
 
-        logger.info(f"   - create the temporary table 'tmp.{table_name}'.")
+        logger.info(f"   - create the temporary table 'tmp.{table_name}'")
         logger.info(f"     * elapsed time: {perf_counter() - start:.2f} (sec)")
     except Exception as e:
         logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
@@ -125,7 +125,7 @@ def merge_tables(params: dict[str, Any]):
         # logger.debug(sql)
         cursor.execute(sql)
 
-        logger.info(f"   - merge the temporary table 'tmp.{table_name}'.")
+        logger.info(f"   - merge the temporary table 'tmp.{table_name}'")
         logger.info(f"     * elapsed time: {perf_counter() - start:.2f} (sec)")
     except Exception as e:
         logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
@@ -152,9 +152,9 @@ def drop_tmp_table(params: dict[str, str]):
 
         ## 임시 테이블 삭제
         cursor.execute(f"DROP TABLE IF EXISTS tmp.{table_name}")
-        logger.debug(f"  - Drop the temporary table.")
+        logger.debug(f"  - Drop the temporary table")
 
-        logger.info(f"   - drop the temporary table 'tmp.{table_name}'.")
+        logger.info(f"   - drop the temporary table 'tmp.{table_name}'")
         logger.info(f"     * elapsed time: {perf_counter() - start:.2f} (sec)")
     except Exception as e:
         logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
@@ -259,121 +259,86 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
 def query_data(
     metadata_dict: dict[str, list[MetaData]], start: str, end: str
 ) -> pl.DataFrame:
-    # 기존 테이블에서 데이터 쿼리
+    """기존 테이블에서 데이터 쿼리"""
     start_time = perf_counter()
     logger.info(f"   - query data from '{start}' to '{end}'")
 
+    df_list = list()
     conn = ImpalaConnection()
-    df_set = dict()
 
-    for table_name, metadata_list in metadata_dict.items():
-        col_map = {"ds_timestamp": f"id_{table_name}"}
+    try:
+        for table_name, metadata_list in metadata_dict.items():
+            col_map = {"ds_timestamp": f"id_{table_name}"}
 
-        tags = [f"CAST(CAST(ds_timestamp    AS    DOUBLE) AS BIGINT) AS ds_timestamp"]
-
-        if not metadata_list:
-            logger.warning(
-                f"- ⚠️ Empty metadata list - {table_name}. Skip to next table."
-            )
-            continue
-
-        db_name = get_db_name(metadata_dict)
-
-        # 쿼리문 생성
-        for m in metadata_list:
-            # if "ds_timestamp" == m.col_name.lower():
-            #     continue
-
-            # # id 형 변환
-            # if "id" == m.col_name.lower():
-            #     tags.append(f"CAST(CAST(ds_timestamp    AS    DOUBLE) AS BIGINT) AS id")
-            #     continue
-
-            # 메타데이터 정의대로 형 변환
-            tags.append(f"CAST({m.tag}    AS    {m.data_type})    AS    {m.tag}")
-            col_map[m.tag] = m.col_name
-
-        sql = f"""
-            SELECT
-            {',\n\t'.join(tags)}
-            FROM
-            {db_name}.{table_name}
-            WHERE ds_date BETWEEN '{start}' AND '{end}';
-        """
-
-        # logger.debug(sql)
-
-        # 데이터 쿼리
-        df = conn.query_polars(sql=sql)
-        logger.info(f"     * table: {table_name}")
-
-        # 32비트 변수로 변경
-        # todo: 스키마 적용
-        df = df.with_columns(
-            [
-                pl.col(pl.Int64).exclude("ds_timestamp").cast(pl.Int32),
-                pl.col(pl.Float32).cast(pl.Float64),
+            tags = [
+                f"CAST(CAST(ds_timestamp    AS    DOUBLE) AS BIGINT) AS ds_timestamp"
             ]
-        )
 
-        if df.is_empty():
-            logger.warning(
-                f"  * ⚠️ The query result set for table '{table_name}' is empty."
+            if not metadata_list:
+                logger.warning(
+                    f"- ⚠️ Empty metadata list - {table_name}. Skip to next table."
+                )
+                continue
+
+            db_name = get_db_name(metadata_dict)
+
+            # 쿼리문 생성
+            for m in metadata_list:
+                # 메타데이터 정의대로 형 변환
+                tags.append(f"CAST({m.tag}    AS    {m.data_type})    AS    {m.tag}")
+                col_map[m.tag] = m.col_name
+
+            sql = f"""
+                SELECT
+                {',\n\t'.join(tags)}
+                FROM
+                {db_name}.{table_name}
+                WHERE ds_date BETWEEN '{start}' AND '{end}';
+            """
+
+            # logger.debug(sql)
+
+            # 데이터 쿼리
+            df = conn.query_polars(sql=sql)
+            logger.info(f"     * table: {table_name}")
+
+            if df.is_empty():
+                logger.warning(
+                    f"  * ⚠️ The query result set for table '{table_name}' is empty."
+                )
+
+            # 15초 간격 리샘플
+            synced_df = (
+                df.rename(col_map)
+                .with_columns(
+                    pl.from_epoch(pl.col(f"id_{table_name}"), time_unit="ms")
+                    .dt.round("15s")
+                    .cast(pl.Datetime("ms"))
+                    .alias("ds_timestamp"),
+                )
+                .group_by("ds_timestamp")
+                .agg(pl.all().first())
+                .sort("ds_timestamp")
             )
 
-        # tag 이름 column 이름으로 맵핑
-        df = df.rename(col_map)
+            df_list.append(synced_df)
 
-        # 15초 간격 리샘플
-        synced_df = (
-            df.with_columns(
-                pl.from_epoch(pl.col(f"id_{table_name}"), time_unit="ms")
-                .dt.round("15s")
-                .cast(pl.Datetime("ms"))
-                .alias("time_sync"),
-            )
-            .group_by("time_sync")
-            .agg(pl.all().first())
-            .sort("time_sync")
+        # 데이터프레임 조인
+        combined_df: pl.DataFrame = reduce(
+            lambda left, right: left.join(right, on="ds_timestamp", how="left"),
+            df_list,
         )
 
-        df_set[table_name] = synced_df
+        # 스키마 입히기
+        schema = get_schema(metadata_dict)
+        combined_df = combined_df.cast(schema)
 
-    # 데이터프레임 조인
-    combined_df = reduce(
-        lambda left, right: left.join(right, on="time_sync", how="left"),
-        list(df_set.values()),
-    ).with_columns(
-        pl.col("time_sync").cast(pl.Int64).alias("ds_timestamp"),
-    )
-
-    # ds_timestamp 열 timestamp 형으로 변환
-    combined_df = combined_df.with_columns(
-        pl.from_epoch("ds_timestamp", time_unit="ms")
-    )
-
-    logger.info(f"     * elapsed time: {perf_counter() - start_time: .2f} (sec)")
+        logger.info(f"     * elapsed time: {perf_counter() - start_time: .2f} (sec)")
+    except Exception as e:
+        logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
+        raise e
 
     return combined_df
-
-def get_schema(metadata_dict: dict[str, list[MetaData]]):
-    schema = dict()
-
-    for metadata_list in metadata_dict.values():
-        for m in metadata_list:
-            col_name = m.col_name
-            data_type = m.data_type
-            if data_type == "DOUBLE":
-                schema[col_name] = pl.Float64
-            if data_type == "INTEGER":
-                schema[col_name] = pl.Int32
-
-    for tbl_name in metadata_dict.keys():
-        schema[f"id_{tbl_name}"] = pl.Int32
-
-    schema["ds_timestamp"] = pl.Datetime
-
-    return schema
 
 
 def main():

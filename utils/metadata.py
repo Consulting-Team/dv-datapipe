@@ -60,6 +60,24 @@ def get_db_name(metadata_dict: dict[str, MetaData]) -> str | None:
         logger.error(err_msg)
         raise ValueError(err_msg)
 
+def get_schema(metadata_dict: dict[str, list[MetaData]]):
+    schema = dict()
+
+    for metadata_list in metadata_dict.values():
+        for m in metadata_list:
+            col_name = m.col_name
+            data_type = m.data_type
+            if data_type == "DOUBLE":
+                schema[col_name] = pl.Float64
+            if data_type == "INTEGER":
+                schema[col_name] = pl.Int32
+
+    for tbl_name in metadata_dict.keys():
+        schema[f"id_{tbl_name}"] = pl.Int64
+
+    schema["ds_timestamp"] = pl.Datetime
+
+    return schema
 
 # if __name__ == "__main__":
 #     path = "resources/csv/H2521_metadata.csv"
