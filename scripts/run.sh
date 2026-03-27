@@ -1,9 +1,9 @@
-#/bin/bash
+#!/bin/bash
 
 BASE=$(dirname $0)
 TARGET_DATE=$(date -d "1 day ago" +%Y-%m-%d)
 
-echo $TARGET_DATE
+# echo $TARGET_DATE
 
 cd $BASE/..
 
@@ -15,4 +15,5 @@ cd $BASE/..
 # python dv_datapipe.py --hull H2508 --date 2025-06-01
 
 # H2532
-python dv_datapipe.py --hull H2532 --date 2026-03-26
+# python dv_datapipe.py --hull H2532 --date 2026-03-26
+python dv_datapipe.py --hull H2532 --date 2026-03-25

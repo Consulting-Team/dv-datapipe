@@ -379,7 +379,8 @@ def main():
     metadata_list = read_metadata(f"resources/csv/{config.hull}_metadata.csv")
 
     # 기존 테이블 및 데이터 삭제
-    clear_table()
+    if config.clear:
+        clear_table()
 
     # Iceberg 테이블 생성
     col_names = create_iceberg_table(metadata_list)

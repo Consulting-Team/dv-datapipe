@@ -23,6 +23,7 @@ class Config:
     date: date
     logger: Logger
     storage_location: str
+    clear: bool
 
     # impala 연결정보
     impala_host: str | None
@@ -45,6 +46,7 @@ class Config:
         self.logger.info(f"   - Impala User: {self.impala_user}")
         self.logger.info(f"   - Storage Account: {self.hs4v1_abfs_strg_acc}")
         self.logger.info(f"   - Container Name: {self.hs4v1_abfs_strg_cont}")
+        self.logger.info(f"   - Clear Option: {self.clear}")
 
         return
 
@@ -83,6 +85,7 @@ def _initiaize() -> Config:
         impala_pwd=os.getenv("IMPALA_PWD"),
         logger=logger,
         storage_location=strg_location,
+        clear=args.clear
     )
 
     return config
@@ -102,6 +105,7 @@ def _parse_args() -> argparse.Namespace:
         default=str(date.today()),
         help="input date in YYYY-MM-DD fromat",
     )
+    parser.add_argument('-c', '--clear', action='store_true', help="")
     args = parser.parse_args()
 
     # hull number 'H'로 시작하는지 체그
