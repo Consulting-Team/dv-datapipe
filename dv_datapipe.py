@@ -209,8 +209,7 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
     table_name = f"{DB_NAME}.{TABLE_NAME}"
     connection = ImpalaConnection()
 
-    # 클라우드 테이블 저장위치
-    # location = get_storage_location()
+    # 오브젝트 스토리지의 테이블 위치
     location = config.storage_location
 
     # column 정의
@@ -297,9 +296,17 @@ def query_data(
                     ## BOOLEAN 타입일 경우 예외 처리
                     case "BOOLEAN":
                         tags.append(
+                            # f"""CASE
+                            #         WHEN LOWER({m.tag}) = 'true' THEN TRUE
+                            #         WHEN LOWER({m.tag}) = 'false' THEN FALSE
+                            #         WHEN {m.tag} = '1' THEN TRUE
+                            #         WHEN {m.tag} = '0' THEN FALSE
+                            #     ELSE NULL
+                            #     END AS {m.tag}
+                            # """
                             f"""CASE
-                                    WHEN LOWER({m.tag}) = 'true' THEN TRUE
-                                    WHEN LOWER({m.tag}) = 'false' THEN FALSE
+                                    WHEN LOWER({m.tag}) IN ('true', '1') THEN TRUE
+                                    WHEN LOWER({m.tag}) IN ('false', '0') THEN FALSE
                                 ELSE NULL
                                 END AS {m.tag}
                             """

@@ -1,0 +1,69 @@
+﻿col_name,db_name,table_name,tag,description,unit,data_type
+vdr_aivdo_lat,gl,h2532_vdr_aivdo1_pivot,latitude,latitude,deg,DOUBLE
+vdr_aivdo_lon,gl,h2532_vdr_aivdo1_pivot,longitude,longitude,deg,DOUBLE
+vdr_aivdo_sog,gl,h2532_vdr_aivdo1_pivot,speed_over_ground,speed_over_ground,kn,DOUBLE
+vdr_aivdo_cog,gl,h2532_vdr_aivdo1_pivot,course_over_ground,course_over_ground,deg,DOUBLE
+vdr_lon_water_speed,gl,h2532_vdr_vdvbw_pivot,longitudinal_water_speed,longitudinal_water_speed,kn,DOUBLE
+vdr_trav_water_speed,gl,h2532_vdr_vdvbw_pivot,traverse_water_speed,traverse_water_speed,kn,DOUBLE
+vdr_relative_wind_speed,gl,h2532_vdr_yxmwv_pivot,wind_speed,wind_speed,kn,DOUBLE
+vdr_relative_wind_angle,gl,h2532_vdr_yxmwv_pivot,wind_angle,wind_angle,deg,DOUBLE
+ship_heading,gl,h2532_vdr_aivdo1_pivot,true_heading,heading,deg,DOUBLE
+ship_fwd_draft,gl,h2532_ias_ias_pivot,mep_40239_meas1,SHIP DRAFT FORE,m,DOUBLE
+ship_aft_draft,gl,h2532_ias_ias_pivot,mep_40240_meas1,SHIP DRAFT AFT,m,DOUBLE
+ship_mid_stbd_draft,gl,h2532_ias_ias_pivot,mep_40241_meas1,SHIP DRAFT STARBOARD,m,DOUBLE
+ship_mid_port_draft,gl,h2532_ias_ias_pivot,mep_40242_meas1,SHIP DRAFT PORTSIDE,m,DOUBLE
+ship_trim,gl,h2532_ias_ias_pivot,mep_40243_meas1,SHIP TRIM,m,DOUBLE
+ship_list,gl,h2532_ias_ias_pivot,mx022_01_meas1,LIST BY SENSOR,deg,DOUBLE
+ship_rudder_port_angle,gl,h2532_ias_ias_pivot,mep_40244_meas1,RUDDER ANGLE [DEG],deg,DOUBLE
+ship_rudder_stbd_angle,gl,h2532_ias_ias_pivot,mes_40244_meas1,RUDDER ANGLE [DEG],deg,DOUBLE
+me1_fg_flow,gl,h2532_ias_ias_pivot,gm023_01_meas1,NO.1 ME GAS FLOW,kg/h,DOUBLE
+me2_fg_flow,gl,h2532_ias_ias_pivot,gm043_01_meas1,NO.2 ME GAS FLOW,kg/h,DOUBLE
+me1_fo_flow,gl,h2532_ias_ias_pivot,fm_me1_40100_meas1,ME1 FUEL FLOW RATE,kg/h,DOUBLE
+me2_fo_flow,gl,h2532_ias_ias_pivot,fm_me2_40100_meas1,ME2 FUEL FLOW RATE,kg/h,DOUBLE
+me1_shaft_power,gl,h2532_ias_ias_pivot,mes_40237_meas1,SHAFT POWER FROM TORQUE-METER,kW,DOUBLE
+me2_shaft_power,gl,h2532_ias_ias_pivot,mep_40237_meas1,SHAFT POWER FROM TORQUE-METER,kW,DOUBLE
+me1_shaft_rpm,gl,h2532_ias_ias_pivot,mes_zt4020_meas1,ENGINE SPEED,rpm,DOUBLE
+me2_shaft_rpm,gl,h2532_ias_ias_pivot,mep_zt4020_meas1,ENGINE SPEED,rpm,DOUBLE
+me1_shaft_torque,gl,h2532_ias_ias_pivot,mes_40238_meas1,TORQUE FROM TORQUE-METER,kNm,DOUBLE
+me2_shaft_torque,gl,h2532_ias_ias_pivot,mep_40238_meas1,TORQUE FROM TORQUE-METER,kNm,DOUBLE
+me1_load,gl,h2532_ias_ias_pivot,tx065_01_meas1,NO.1 ME LOAD,%,DOUBLE
+me2_load,gl,h2532_ias_ias_pivot,tx165_01_meas1,NO.2 ME LOAD,%,DOUBLE
+me1_fo_vlsfo_use,gl,h2532_ias_ias_pivot,om011_06_meas1,NO.1 ME VLSFO USE IND,-,BOOLEAN
+me2_fo_vlsfo_use,gl,h2532_ias_ias_pivot,om012_06_meas1,NO.2ME VLSFO USE IND,-,BOOLEAN
+me1_fo_lsmgo_use,gl,h2532_ias_ias_pivot,om011_07_meas1,NO.1 ME LSMGO USE IND,-,BOOLEAN
+me2_fo_lsmgo_use,gl,h2532_ias_ias_pivot,om012_07_meas1,NO.2 ME LSMGO USE IND,-,BOOLEAN
+me1_fg_use,gl,h2532_ias_ias_pivot,gm018_01_meas1,NO.1 ME ME GAS SUPPLY RUN,-,BOOLEAN
+me2_fg_use,gl,h2532_ias_ias_pivot,gm038_01_meas1,NO.2 ME ME GAS SUPPLY RUN,-,BOOLEAN
+ge_fg_flow,gl,h2532_ias_ias_pivot,ge007_01_meas1,GE GAS MASS FLOW GAS FLOW METER,kg/h,DOUBLE
+ge_fo_flow,gl,h2532_ias_ias_pivot,fm_dg_40100_meas1,DG FUEL FLOW RATE,kg/h,DOUBLE
+ge1_power,gl,h2532_ias_ias_pivot,pm001_10_meas1,NO.1 GE GEN PWR (KW),kW,DOUBLE
+ge3_power,gl,h2532_ias_ias_pivot,pm003_10_meas1,NO.3 GE GEN PWR (KW),kW,DOUBLE
+ge2_1_power,gl,h2532_ias_ias_pivot,pm002_10_meas1,NO.2 GE-A GEN PWR (KW),kW,DOUBLE
+ge2_2_power,gl,h2532_ias_ias_pivot,pm102_07_meas1,NO.2 GE-B GEN PWR (KW),kW,DOUBLE
+ge1_load,gl,h2532_ias_ias_pivot,ge1_30321_meas1,GE1 ENGINE LOAD (%),%,DOUBLE
+ge2_load,gl,h2532_ias_ias_pivot,ge2_30321_meas1,GE2 ENGINE LOAD (%),%,DOUBLE
+ge3_load,gl,h2532_ias_ias_pivot,ge3_30321_meas1,GE3 ENGINE LOAD (%),%,DOUBLE
+ge1_fg_use,gl,h2532_ias_ias_pivot,ge1_10098_meas1,GE1 FUEL MODE SELECTED: GAS MODE,-,BOOLEAN
+ge2_fg_use,gl,h2532_ias_ias_pivot,ge2_10098_meas1,GE2 FUEL MODE SELECTED: GAS MODE,-,BOOLEAN
+ge3_fg_use,gl,h2532_ias_ias_pivot,ge3_10098_meas1,GE3 FUEL MODE SELECTED: GAS MODE,-,BOOLEAN
+auxb_fo_flow,gl,h2532_ias_ias_pivot,fm_ab_40100_meas1,AUX BOILER FUEL FLOW RATE,kg/h,DOUBLE
+auxb1_fo_lsmgo_use,gl,h2532_ias_ias_pivot,ob021_01_meas1,LSMGO USE INDICATION,-,BOOLEAN
+auxb1_fo_vlsfo_use,gl,h2532_ias_ias_pivot,ob011_01_meas1,VLSFO USE INDICATION,-,BOOLEAN
+gcu_flow,gl,h2532_ias_ias_pivot,gc029_01_meas1,GCU GAS FLOW METER,kg/h,DOUBLE
+sg1_active_power,gl,h2532_ias_ias_pivot,pm014_01_meas1,SG1 ACTIVE POWER,kW,DOUBLE
+sg2_active_power,gl,h2532_ias_ias_pivot,pm114_01_meas1,SG2 ACTIVE POWER,kW,DOUBLE
+als1_comp_power,gl,h2532_ias_ias_pivot,als_30007_meas1,No.1 COMP MOTOR KW VALUE,kW,DOUBLE
+als2_comp_power,gl,h2532_ias_ias_pivot,als_30014_meas1,No.2 COMP MOTOR KW VALUE,kW,DOUBLE
+ct1_liq_volume,gl,h2532_ias_ias_pivot,ct1_volliq_meas1,CT1 LIQUID VOLUME,m3,DOUBLE
+ct2_liq_volume,gl,h2532_ias_ias_pivot,ct2_volliq_meas1,CT2 LIQUID VOLUME,m3,DOUBLE
+ct3_liq_volume,gl,h2532_ias_ias_pivot,ct3_volliq_meas1,CT3 LIQUID VOLUME,m3,DOUBLE
+ct4_liq_volume,gl,h2532_ias_ias_pivot,ct4_volliq_meas1,CT4 LIQUID VOLUME,m3,DOUBLE
+ct1_liq_avg_temp,gl,h2532_ias_ias_pivot,ct1_avgliqtemp_meas1,CT1 AVERAGE LIQUID TEMPERATURE,degC,DOUBLE
+ct2_liq_avg_temp,gl,h2532_ias_ias_pivot,ct2_avgliqtemp_meas1,CT2 AVERAGE LIQUID TEMPERATURE,degC,DOUBLE
+ct3_liq_avg_temp,gl,h2532_ias_ias_pivot,ct3_avgliqtemp_meas1,CT3 AVERAGE LIQUID TEMPERATURE,degC,DOUBLE
+ct4_liq_avg_temp,gl,h2532_ias_ias_pivot,ct4_avgliqtemp_meas1,CT4 AVERAGE LIQUID TEMPERATURE,degC,DOUBLE
+prs_separator_return_flow,gl,h2532_ias_ias_pivot,gh087_01_meas1,PRS OUT GAS FLOW (FIT-002),kg/h,DOUBLE
+prs_bog_inlet_flow,gl,h2532_ias_ias_pivot,gh089_01_meas1,PRS IN GAS FLOW (FIT-001),kg/h,DOUBLE
+prs_ct_return_flow,gl,h2532_ias_ias_pivot,gh090_01_meas1,PRS COND RET FLOW,kg/h,DOUBLE
+fgc1_mtr_current,gl,h2532_ias_ias_pivot,bg103_01_meas1,NO.1 FG COMP MTR CURRENT IND,A,DOUBLE
+fgc2_mtr_current,gl,h2532_ias_ias_pivot,bg303_01_meas1,NO.2 FG COMP MTR CURRENT IND,A,DOUBLE

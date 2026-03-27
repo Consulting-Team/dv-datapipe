@@ -140,6 +140,18 @@ def caculate_additional_cols(df: DataFrame) -> DataFrame:
                 (100.0 * pl.col("ge3_power") / GE3_RATED_POWER).alias("ge3_load"),
                 (100.0 * pl.col("ge4_power") / GE4_RATED_POWER).alias("ge4_load"),
             )
+        case "H2521":
+            df = df.with_columns(
+                pl.col("me1_fg_use").cast(pl.Boolean),
+                pl.col("me2_fg_use").cast(pl.Boolean),
+                pl.col("me1_fo_vlsfo_use").cast(pl.Boolean),
+                pl.col("me2_fo_vlsfo_use").cast(pl.Boolean),
+                pl.col("me1_fo_lsmgo_use").cast(pl.Boolean),
+                pl.col("me2_fo_lsmgo_use").cast(pl.Boolean),
+                pl.col("ge1_fg_use").cast(pl.Boolean),
+                pl.col("ge2_fg_use").cast(pl.Boolean),
+                pl.col("ge3_fg_use").cast(pl.Boolean),
+            )
 
     return df
 
