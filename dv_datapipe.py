@@ -2,7 +2,7 @@
 
 from config import config, logger
 from connection import ImpalaConnection, abfs
-from utils.metadata import read_metadata, MetaData, get_db_name, get_schema
+from utils.metadata import *
 from functools import reduce
 from time import perf_counter
 from typing import Any
@@ -177,6 +177,8 @@ def insert_data(
     # source table에서 데이터 쿼리
     df = query_data(metadata_dict=metadata_dict, start=start, end=end)
 
+    # todo: 호선 별 예외처리
+
     # # 임시 테이블 생성
     create_temporary_table(
         {
@@ -221,6 +223,9 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
             ]
         )
     )
+    # 호선에 따른 열 추가 예외 처리
+    cols = append_additional_cols(cols)
+    cols[1:] = sorted(cols[1:])
     cols.extend([f"id_{table_name}    BIGINT" for table_name in metadata_dict.keys()])
     cols_str = ",\n".join(cols)
 
@@ -351,7 +356,7 @@ def main():
     metadata_list = read_metadata(f"resources/csv/{config.hull}_metadata.csv")
 
     # 기존 테이블 및 데이터 삭제
-    # clear_table()
+    clear_table()
 
     # Iceberg 테이블 생성
     col_names = create_iceberg_table(metadata_list)
