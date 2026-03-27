@@ -8,41 +8,45 @@ vdr_trav_water_speed,mg,h2508_vdr_vdvbw_pivot,trav_waterspeed,traverse_water_spe
 vdr_relative_wind_speed,mg,h2508_vdr_yxmwv_pivot,wind_speed,wind_speed,kn,DOUBLE
 vdr_relative_wind_angle,mg,h2508_vdr_yxmwv_pivot,wind_angle,wind_angle,deg,DOUBLE
 ship_heading,mg,h2508_vdr_aivdo1_pivot,true_heading,true_heading,deg,DOUBLE
-ship_fwd_draft,mg,h2508_ias_ias_pivot,rg009c_meas1,FWD DRAFT  ,m,DOUBLE
-ship_aft_draft,mg,h2508_ias_ias_pivot,rg012c_meas1,AFT DRAFT  ,m,DOUBLE
-ship_mid_stbd_draft,mg,h2508_ias_ias_pivot,rg010c_meas1,MID DRAFT PORT  ,m,DOUBLE
-ship_mid_port_draft,mg,h2508_ias_ias_pivot,rg011c_meas1,MID DRAFT STBD  ,m,DOUBLE
-ship_trim,mg,h2508_ias_ias_pivot,rg020_meas1,SHIP'S TRIM  ,m,DOUBLE
-ship_list,mg,h2508_ias_ias_pivot,rg021_meas1,SHIP'S LIST  ,deg,DOUBLE
-ship_rudder_port_angle,mg,h2508_ias_ias_pivot,sp028_meas1,RUDDER ANGLE STBD ,deg,DOUBLE
-ship_rudder_stbd_angle,mg,h2508_ias_ias_pivot,sp029_meas1,RUDDER ANGLE PORT ,deg,DOUBLE
+ship_fwd_draft,mg,h2508_ias_ias_pivot,rg009c_meas1,FWD DRAFT,m,DOUBLE
+ship_aft_draft,mg,h2508_ias_ias_pivot,rg012c_meas1,AFT DRAFT,m,DOUBLE
+ship_mid_stbd_draft,mg,h2508_ias_ias_pivot,rg010c_meas1,MID DRAFT POR,m,DOUBLE
+ship_mid_port_draft,mg,h2508_ias_ias_pivot,rg011c_meas1,MID DRAFT STB,m,DOUBLE
+ship_trim,mg,h2508_ias_ias_pivot,rg020_meas1,SHIP'S TRIM,m,DOUBLE
+ship_list,mg,h2508_ias_ias_pivot,rg021_meas1,SHIP'S LIST,deg,DOUBLE
+ship_rudder_port_angle,mg,h2508_ias_ias_pivot,sp028_meas1,RUDDER ANGLE STBD,deg,DOUBLE
+ship_rudder_stbd_angle,mg,h2508_ias_ias_pivot,sp029_meas1,RUDDER ANGLE PORT,deg,DOUBLE
 me1_fg_flow,mg,h2508_ias_ias_pivot,gm023_meas1,ME(S) GAS FLOW,kg/h,DOUBLE
 me2_fg_flow,mg,h2508_ias_ias_pivot,gm043_meas1,ME(P) GAS FLOW,kg/h,DOUBLE
 me1_fo_flow,mg,h2508_ias_ias_pivot,om013_meas1,ME(S) FO INLET FLOW,kg/h,DOUBLE
 me2_fo_flow,mg,h2508_ias_ias_pivot,om023_meas1,ME(P) FO INLET FLOW,kg/h,DOUBLE
-me1_shaft_power,mg,h2508_ias_ias_pivot,sp001_meas1,Shaft Power #1 Stbd ,kW,DOUBLE
-me2_shaft_power,mg,h2508_ias_ias_pivot,sp005_meas1,Shaft Power #2 Port ,kW,DOUBLE
-me1_shaft_rpm,mg,h2508_ias_ias_pivot,sp003_meas1,Shaft Speed #1 Stbd ,rpm,DOUBLE
+me1_shaft_power,mg,h2508_ias_ias_pivot,sp001_meas1,Shaft Power #1 Stbd,kW,DOUBLE
+me2_shaft_power,mg,h2508_ias_ias_pivot,sp005_meas1,Shaft Power #2 Port,kW,DOUBLE
+me1_shaft_rpm,mg,h2508_ias_ias_pivot,sp003_meas1,Shaft Speed #1 Stbd,rpm,DOUBLE
 me2_shaft_rpm,mg,h2508_ias_ias_pivot,sp007_meas1,Shaft Speed #2 Port ,rpm,DOUBLE
 me1_shaft_torque,mg,h2508_ias_ias_pivot,sp002_meas1,Shaft Torque #1 Stbd ,kNm,DOUBLE
 me2_shaft_torque,mg,h2508_ias_ias_pivot,sp006_meas1,Shaft Torque #2 Port ,kNm,DOUBLE
 me1_load,mg,h2508_ias_ias_pivot,tx065_meas1,ME(S) LOAD,%,DOUBLE
 me2_load,mg,h2508_ias_ias_pivot,tx165_meas1,ME(P) LOAD,%,DOUBLE
-me1_fo_vlsfo_use,mg,h2508_ias_ias_pivot,om011_06_meas1,ME(S) HFO  USE IND,-,INTEGER
-me2_fo_vlsfo_use,mg,h2508_ias_ias_pivot,om012_06_meas1,ME(P) HFO  USE IND,-,INTEGER
-me1_fo_lsmgo_use,mg,h2508_ias_ias_pivot,om011_07_meas1,ME(S) LSMGO USE IND,-,INTEGER
-me2_fo_lsmgo_use,mg,h2508_ias_ias_pivot,om012_07_meas1,ME(P) LSMGO USE IND,-,INTEGER
-me1_fg_use,mg,h2508_ias_ias_pivot,gm016_meas1,ME(S) ME GAS SUPPLY START/STOP,-,INTEGER
-me2_fg_use,mg,h2508_ias_ias_pivot,gm036_meas1,ME(P) ME GAS SUPPLY START/STOP,-,INTEGER
+me1_fo_vlsfo_use,mg,h2508_ias_ias_pivot,om011_06_meas1,ME(S) HFO  USE IND,-,BOOLEAN
+me2_fo_vlsfo_use,mg,h2508_ias_ias_pivot,om012_06_meas1,ME(P) HFO  USE IND,-,BOOLEAN
+me1_fo_lsmgo_use,mg,h2508_ias_ias_pivot,om011_07_meas1,ME(S) LSMGO USE IND,-,BOOLEAN
+me2_fo_lsmgo_use,mg,h2508_ias_ias_pivot,om012_07_meas1,ME(P) LSMGO USE IND,-,BOOLEAN
+me1_fg_use,mg,h2508_ias_ias_pivot,gm016_meas1,ME(S) ME GAS SUPPLY START/STOP,-,BOOLEAN
+me2_fg_use,mg,h2508_ias_ias_pivot,gm036_meas1,ME(P) ME GAS SUPPLY START/STOP,-,BOOLEAN
+ge1_fg_flow,mg,h2508_ias_ias_pivot,ge005_01_meas1,GE 1 FG LINE GAS FLOW,kg/h,DOUBLE
+ge2_fg_flow,mg,h2508_ias_ias_pivot,ge005_02_meas1,GE 2 FG LINE GAS FLOW,kg/h,DOUBLE
+ge3_fg_flow,mg,h2508_ias_ias_pivot,ge007_01_meas1,GE 3 FG LINE GAS FLOW,kg/h,DOUBLE
+ge4_fg_flow,mg,h2508_ias_ias_pivot,ge007_02_meas1,GE 4 FG LINE GAS FLOW,kg/h,DOUBLE
 ge_fo_flow,mg,h2508_ias_ias_pivot,oe013_meas1,GE FO INLET FLOW,kg/h,DOUBLE
 ge1_power,mg,h2508_ias_ias_pivot,pm001_08_meas1,GE1 POWER (kW),kW,DOUBLE
 ge2_power,mg,h2508_ias_ias_pivot,pm002_08_meas1,GE2 POWER,kW,DOUBLE
 ge3_power,mg,h2508_ias_ias_pivot,pm003_08_meas1,GE3 POWER,kW,DOUBLE
 ge4_power,mg,h2508_ias_ias_pivot,pm004_08_meas1,GE4 POWER,kW,DOUBLE
-ge1_fg_use,mg,h2508_ias_ias_pivot,gx104_meas1,GE 1 GAS MODE ACTIVE,-,INTEGER
-ge2_fg_use,mg,h2508_ias_ias_pivot,gx204_meas1,GE 2 GAS MODE ACTIVE,-,INTEGER
-ge3_fg_use,mg,h2508_ias_ias_pivot,gx304_meas1,GE 3 GAS MODE ACTIVE,-,INTEGER
-ge4_fg_use,mg,h2508_ias_ias_pivot,gx404_meas1,GE 4 GAS MODE ACTIVE,-,INTEGER
+ge1_fg_use,mg,h2508_ias_ias_pivot,gx104_meas1,GE 1 GAS MODE ACTIVE,-,BOOLEAN
+ge2_fg_use,mg,h2508_ias_ias_pivot,gx204_meas1,GE 2 GAS MODE ACTIVE,-,BOOLEAN
+ge3_fg_use,mg,h2508_ias_ias_pivot,gx304_meas1,GE 3 GAS MODE ACTIVE,-,BOOLEAN
+ge4_fg_use,mg,h2508_ias_ias_pivot,gx404_meas1,GE 4 GAS MODE ACTIVE,-,BOOLEAN
 auxb_fo_lsmgo_flow,mg,h2508_ias_ias_pivot,sp067_meas1,LSMGO FLOW TO A/B'S ,kg/h,DOUBLE
 auxb_fo_vlsfo_flow,mg,h2508_ias_ias_pivot,sp066_meas1,HFO/MDO FLOW TO A/B'S ,kg/h,DOUBLE
 gcu_flow,mg,h2508_ias_ias_pivot,gc030_01_meas1,GCU Gas Flowmeter Flow ,kg/h,DOUBLE

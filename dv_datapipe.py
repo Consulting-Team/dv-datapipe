@@ -178,6 +178,7 @@ def insert_data(
     df = query_data(metadata_dict=metadata_dict, start=start, end=end)
 
     # todo: 호선 별 예외처리
+    df = caculate_additional_cols(df)
 
     # # 임시 테이블 생성
     create_temporary_table(
@@ -291,8 +292,23 @@ def query_data(
 
             # 쿼리문 생성
             for m in metadata_list:
-                # 메타데이터 정의대로 형 변환
-                tags.append(f"CAST({m.tag}    AS    {m.data_type})    AS    {m.tag}")
+                ## 메타데이터 정의대로 형 변환
+                match m.data_type:
+                    ## BOOLEAN 타입일 경우 예외 처리
+                    case "BOOLEAN":
+                        tags.append(
+                            f"""CASE
+                                    WHEN LOWER({m.tag}) = 'true' THEN TRUE
+                                    WHEN LOWER({m.tag}) = 'false' THEN FALSE
+                                ELSE NULL
+                                END AS {m.tag}
+                            """
+                        )
+                    case _:
+                        tags.append(
+                            f"CAST({m.tag}    AS    {m.data_type})    AS    {m.tag}"
+                        )
+
                 col_map[m.tag] = m.col_name
 
             sql = f"""
