@@ -63,10 +63,11 @@ def create_temporary_table(params: dict[str, Any]):
         ## Azure에 parquet 저장
         df.write_parquet(
             parquet_path,
-            storage_options={
-                "account_name": config.hs4v1_abfs_strg_acc,
-                "account_key": config.hs4v1_abfs_strg_key,
-            },
+            # storage_options={
+            #     "account_name": config.hs4v1_abfs_strg_acc,
+            #     "account_key": config.hs4v1_abfs_strg_key,
+            # },
+            storage_options = config.get_storage_options()
         )
 
         cursor.execute(f"DROP TABLE IF EXISTS tmp.{table_name}")
@@ -329,7 +330,10 @@ def query_data(
             # logger.debug(sql)
 
             # 데이터 쿼리
-            df = conn.query_polars(sql=sql)
+            if "vdr" in table_name:
+                df = conn.query_polars(sql=sql, idx_access=False)
+            else:
+                df = conn.query_polars(sql=sql)
             logger.info(f"     * table: {table_name}")
 
             if df.is_empty():

@@ -48,7 +48,13 @@ class Config:
         self.logger.info(f"   - Container Name: {self.hs4v1_abfs_strg_cont}")
         self.logger.info(f"   - Clear Option: {self.clear}")
 
-        return
+    def get_storage_options(self) -> dict[str, str]:
+        """오브젝트 스토리지 접근을 위한 정보 반환"""
+
+        return {
+            "account_name": config.hs4v1_abfs_strg_acc,
+            "account_key": config.hs4v1_abfs_strg_key
+        }
 
 
 def _initiaize() -> Config:
@@ -73,11 +79,9 @@ def _initiaize() -> Config:
     config = Config(
         hull=hull,
         date=args.date,
-        # hs4v1_abfs_strg_acc=os.getenv("HS4V1_ABFS_STRG_ACC"),
         hs4v1_abfs_strg_acc=strg_account_name,
         hs4v1_abfs_strg_key=os.getenv("HS4V1_ABFS_STRG_KEY"),
         hs4v1_abfs_strg_protocol=os.getenv("HS4V1_ABFS_STRG_PROTOCOL"),
-        # hs4v1_abfs_strg_cont=os.getenv("HS4V1_ABFS_STRG_CONT"),
         hs4v1_abfs_strg_cont=strg_container_name,
         impala_host=os.getenv("IMPALA_HOST"),
         impala_port=os.getenv("IMPALA_PORT"),
@@ -95,7 +99,6 @@ def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="Data Collection", description="Data Pipie for Data Visualization."
     )
-
     parser.add_argument(
         "--hull", type=str, default="H0000", help="input hull number (H0000)"
     )
@@ -105,7 +108,7 @@ def _parse_args() -> argparse.Namespace:
         default=str(date.today()),
         help="input date in YYYY-MM-DD fromat",
     )
-    parser.add_argument('-c', '--clear', action='store_true', help="")
+    parser.add_argument("-c", "--clear", action='store_true', help="")
     args = parser.parse_args()
 
     # hull number 'H'로 시작하는지 체그
@@ -113,6 +116,7 @@ def _parse_args() -> argparse.Namespace:
     args.hull = hnum.strip().upper()
 
     return args
+
 
 
 config: Config = _initiaize()

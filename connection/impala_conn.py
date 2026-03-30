@@ -115,13 +115,14 @@ class ImpalaConnection:
             if cursor:
                 cursor.close
 
-    def query_polars(self, sql: str, batch_size: int = None) -> pl.DataFrame:
+    def query_polars(self, sql: str, batch_size: int = 50000, idx_access = True) -> pl.DataFrame:
         #! Impala SQL 실행 후 Polars DataFrame으로 반환
         #! 대용량의 데이터를 조회할 경우 batch_size 입력 필요
         #! batch_size: 일반적인 경우 50,000 권장
         try:
             cursor = self.conn.cursor()
-            # cursor.execute("SET PARQUET_FALLBACK_SCHEMA_RESOLUTION = name")
+            if not idx_access:
+                cursor.execute("SET PARQUET_FALLBACK_SCHEMA_RESOLUTION = name")
             cursor.execute(sql)
             columns = [desc[0] for desc in cursor.description]
 
