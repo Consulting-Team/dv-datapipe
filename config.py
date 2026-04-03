@@ -20,7 +20,9 @@ os.chdir(base_path)
 @dataclass
 class Config:
     hull: str
-    date: date
+    start: date
+    end: date
+    # date: date
     logger: Logger
     storage_location: str
     clear: bool
@@ -40,7 +42,9 @@ class Config:
     def display(self):
         self.logger.info("🔔 Configurations")
         self.logger.info(f"   - Hull Number: {self.hull}")
-        self.logger.info(f"   - Input Date: {self.date}")
+        # self.logger.info(f"   - Input Date: {self.date}")
+        self.logger.info(f"   - Start Date: {self.start}")
+        self.logger.info(f"   - End Date: {self.end}")
         self.logger.info(f"   - Impala Host: {self.impala_host}")
         self.logger.info(f"   - Impala Port: {self.impala_port}")
         self.logger.info(f"   - Impala User: {self.impala_user}")
@@ -78,7 +82,9 @@ def _initiaize() -> Config:
     # config object 구성
     config = Config(
         hull=hull,
-        date=args.date,
+        # date=args.date,
+        start=args.start,
+        end=args.end,
         hs4v1_abfs_strg_acc=strg_account_name,
         hs4v1_abfs_strg_key=os.getenv("HS4V1_ABFS_STRG_KEY"),
         hs4v1_abfs_strg_protocol=os.getenv("HS4V1_ABFS_STRG_PROTOCOL"),
@@ -102,11 +108,23 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--hull", type=str, default="H0000", help="input hull number (H0000)"
     )
+    # parser.add_argument(
+    #     "--date",
+    #     type=date.fromisoformat,
+    #     default=str(date.today()),
+    #     help="input date in YYYY-MM-DD fromat",
+    # )
     parser.add_argument(
-        "--date",
+        "--start",
         type=date.fromisoformat,
         default=str(date.today()),
-        help="input date in YYYY-MM-DD fromat",
+        help="start date in YYYY-MM-DD fromat",
+    )
+    parser.add_argument(
+        "--end",
+        type=date.fromisoformat,
+        default=str(date.today()),
+        help="end date in YYYY-MM-DD fromat",
     )
     parser.add_argument("-c", "--clear", action='store_true', help="")
     args = parser.parse_args()

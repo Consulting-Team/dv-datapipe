@@ -390,8 +390,9 @@ def main():
     col_names = create_iceberg_table(metadata_list)
 
     # 데이터 삽입
-    target_date = config.date.strftime("%Y%m%d")
-    insert_data(col_names, metadata_list, start=target_date, end=target_date)
+    start = config.start.strftime("%Y%m%d")
+    end = config.end.strftime("%Y%m%d")
+    insert_data(col_names, metadata_list, start=start, end=end)
 
 
 if __name__ == "__main__":

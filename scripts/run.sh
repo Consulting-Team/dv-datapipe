@@ -16,4 +16,4 @@ cd $BASE/..
 
 # H2532
 # python dv_datapipe.py --hull H2532 --date 2026-03-26
-python dv_datapipe.py --hull H2532 --date 2026-03-26 -c
+python dv_datapipe.py --hull H2532 --start 2026-04-01 --end 2026-04-02 -c
