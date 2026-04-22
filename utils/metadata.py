@@ -42,8 +42,12 @@ def read_metadata(path: str) -> dict[str, MetaData]:
         reader = csv.DictReader(f)
 
         for row in reader:
-            info = MetaData(**row)
-            tables[info.table_name].append(info)
+            try:
+                info = MetaData(**row)
+                tables[info.table_name].append(info)
+            except Exception as e:
+                logger.error(f"❌ Config parsing error. {e}")
+                raise e
 
     return tables
 
@@ -101,16 +105,23 @@ def append_additional_cols(cols: list[str]) -> list[str]:
         case "H2508":
             cols.extend(
                 [
-                    "ge_fg_flow    DOUBLE",
-                    "ge1_load    DOUBLE",
-                    "ge2_load    DOUBLE",
-                    "ge3_load    DOUBLE",
-                    "ge4_load    DOUBLE",
+                    "ge_fg_flow    FLOAT",
+                    "ge1_load    FLOAT",
+                    "ge2_load    FLOAT",
+                    "ge3_load    FLOAT",
+                    "ge4_load    FLOAT",
+                    "auxb_fo_flow    FLOAT",
+                    "me_fo_flow    FLOAT",
+                    "me_fg_flow    FLOAT",
                 ]
             )
         case "H2521" | "H2532":
             cols.extend(
-                ["ge2_power DOUBLE"]
+                [
+                    "ge2_power    FLOAT",
+                    "me_fo_flow    FLOAT",
+                    "me_fg_flow    FLOAT",
+                ]
             )
 
     return cols
@@ -120,18 +131,12 @@ def caculate_additional_cols(df: DataFrame) -> DataFrame:
     """호선 별 예외 컬럼 데이터 추가"""
     match config.hull:
         case "H2508":
-            GE1_RATED_POWER = 2880.0
-            GE2_RATED_POWER = 3840.0
-            GE3_RATED_POWER = 3840.0
-            GE4_RATED_POWER = 2880.0
+            GE1_ALTER_POWER = 2750.0
+            GE2_ALTER_POWER = 3670.0
+            GE3_ALTER_POWER = 3670.0
+            GE4_ALTER_POWER = 2750.0
 
             df = df.with_columns(
-                (
-                    pl.col("ge1_fg_flow")
-                    + pl.col("ge2_fg_flow")
-                    + pl.col("ge3_fg_flow")
-                    + pl.col("ge4_fg_flow")
-                ).alias("ge_fg_flow"),
                 pl.col("me1_fg_use").cast(pl.Boolean),
                 pl.col("me2_fg_use").cast(pl.Boolean),
                 pl.col("me1_fo_vlsfo_use").cast(pl.Boolean),
@@ -142,14 +147,30 @@ def caculate_additional_cols(df: DataFrame) -> DataFrame:
                 pl.col("ge2_fg_use").cast(pl.Boolean),
                 pl.col("ge3_fg_use").cast(pl.Boolean),
                 pl.col("ge4_fg_use").cast(pl.Boolean),
-                (100.0 * pl.col("ge1_power") / GE1_RATED_POWER).alias("ge1_load"),
-                (100.0 * pl.col("ge2_power") / GE2_RATED_POWER).alias("ge2_load"),
-                (100.0 * pl.col("ge3_power") / GE3_RATED_POWER).alias("ge3_load"),
-                (100.0 * pl.col("ge4_power") / GE4_RATED_POWER).alias("ge4_load"),
+                # GE foc 계산
+                (
+                    pl.col("ge1_fg_flow")
+                    + pl.col("ge2_fg_flow")
+                    + pl.col("ge3_fg_flow")
+                    + pl.col("ge4_fg_flow")
+                ).alias("ge_fg_flow"),
+                # GE load 계산
+                (100.0 * pl.col("ge1_power") / GE1_ALTER_POWER).alias("ge1_load"),
+                (100.0 * pl.col("ge2_power") / GE2_ALTER_POWER).alias("ge2_load"),
+                (100.0 * pl.col("ge3_power") / GE3_ALTER_POWER).alias("ge3_load"),
+                (100.0 * pl.col("ge4_power") / GE4_ALTER_POWER).alias("ge4_load"),
+                # ME foc / fgc 계산
+                (pl.col("me1_fo_flow") + pl.col("me2_fo_flow")).alias("me_fo_flow"),
+                (pl.col("me1_fg_flow") + pl.col("me2_fg_flow")).alias("me_fg_flow"),
+                # aux. boiler foc 계산
+                (pl.col("auxb_fo_lsmgo_flow") + pl.col("auxb_fo_vlsfo_flow")).alias("auxb_fo_flow"),
             )
         case "H2521" | "H2532":
             df = df.with_columns(
-                (pl.col("ge2_1_power") + pl.col("ge2_2_power")).alias("ge2_power")
+                (pl.col("ge2_1_power") + pl.col("ge2_2_power")).alias("ge2_power"),
+                # ME foc / fgc 계산
+                (pl.col("me1_fo_flow") + pl.col("me2_fo_flow")).alias("me_fo_flow"),
+                (pl.col("me1_fg_flow") + pl.col("me2_fg_flow")).alias("me_fg_flow"),
             )
 
     return df

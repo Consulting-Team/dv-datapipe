@@ -21,10 +21,10 @@ TABLE_NAME = f"{config.hull}_raw"
 
 def clear_table():
     # 테이블 및 오브젝트 스토리지 데이터 삭제
-    logger.info(f"👉 Clear exsiting table '{DB_NAME}.{TABLE_NAME}'.")
     start = perf_counter()
     hnum = config.hull
     location = config.storage_location
+    logger.info(f"👉 Clear exsiting table for '{hnum}'.")
 
     try:
         connection = ImpalaConnection()
@@ -282,7 +282,9 @@ def insert_calc_data(start: str, end: str):
             ds_timestamp,
             true_wind_speed,
             true_wind_angle,
-            beaufort_number
+            beaufort_number,
+            foc,
+            fgc
         )
         WITH vector_base AS (
             SELECT
@@ -291,16 +293,20 @@ def insert_calc_data(start: str, end: str):
                 vdr_relative_wind_angle,
                 vdr_aivdo_sog,
                 -vdr_relative_wind_speed * SIN(RADIANS(vdr_relative_wind_angle)) AS v_tx,
-                -vdr_relative_wind_speed * COS(RADIANS(vdr_relative_wind_angle)) + vdr_aivdo_sog AS v_ty
+                -vdr_relative_wind_speed * COS(RADIANS(vdr_relative_wind_angle)) + vdr_aivdo_sog AS v_ty,
+                me_fo_flow + ge_fo_flow + auxb_fo_flow as foc,
+                me_fg_flow + ge_fg_flow as fgc
             FROM {DB_NAME}.{src_tbl}
             WHERE ds_timestamp >= CAST('{start}' AS TIMESTAMP)
             AND ds_timestamp < CAST('{end}' AS TIMESTAMP)
         ),
         true_wind_calc AS (
             SELECT
-                *,
+                ds_timestamp,
                 CAST(SQRT(POWER(v_tx, 2) + POWER(v_ty, 2)) AS FLOAT) AS v_t,
-                CAST(DEGREES(ATAN2(v_tx, v_ty)) AS FLOAT) AS v_d
+                CAST(DEGREES(ATAN2(v_tx, v_ty)) AS FLOAT) AS v_d,
+                CAST(foc AS FLOAT) AS foc,
+                CAST(fgc AS FLOAT) AS fgc
             FROM vector_base
         )
         SELECT
@@ -322,7 +328,9 @@ def insert_calc_data(start: str, end: str):
                 WHEN v_t < 56.0 THEN 10
                 WHEN v_t < 64.0 THEN 11
                 ELSE 12
-            END AS beaufort_number
+            END AS beaufort_number,
+            foc,
+            fgc
         FROM true_wind_calc;
     """
 
