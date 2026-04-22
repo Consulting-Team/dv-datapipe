@@ -1,4 +1,7 @@
-#! iceberg 테이블을 생성하고 기존 테이블에서 데이터를 복사해서 삽입
+"""
+데이터가시화 과제용 데이터파이프 코드
+iceberg 테이블을 생성하고 기존 테이블에서 데이터를 복사해서 삽입
+"""
 
 from config import config, logger
 from connection import ImpalaConnection, abfs
@@ -6,20 +9,21 @@ from utils.metadata import *
 from functools import reduce
 from time import perf_counter
 from typing import Any
+from datetime import datetime, timedelta
 import polars as pl
 import inspect
 
 # 테이블이 생성될 DB
-DB_NAME = "tmp"
+DB_NAME = "dv"
 # 새로 생성할 테이블 이름
-TABLE_NAME = f"{config.hull}_iceberg_test"
+TABLE_NAME = f"{config.hull}_raw"
 
 
 def clear_table():
     # 테이블 및 오브젝트 스토리지 데이터 삭제
     logger.info(f"👉 Clear exsiting table '{DB_NAME}.{TABLE_NAME}'.")
     start = perf_counter()
-    # location = get_storage_location()
+    hnum = config.hull
     location = config.storage_location
 
     try:
@@ -27,9 +31,14 @@ def clear_table():
         conn = connection.conn
         cursor = conn.cursor()
 
-        # 테이블 삭제
-        sql = f"DROP TABLE IF EXISTS {DB_NAME}.{TABLE_NAME};"
+        # 호선 이름이 포함된 테이블 찾기
+        sql = f"SHOW TABLES IN {DB_NAME} LIKE '{hnum.lower()}*'"
         cursor.execute(sql)
+        for (table,) in cursor.fetchall():
+            # 테이블 삭제
+            sql = f"DROP TABLE IF EXISTS {DB_NAME}.{table};"
+            logger.debug(f"  - Drop table: {table}")
+            cursor.execute(sql)
 
         # 클라우드에서 데이터 삭제
         if abfs.exists(location):
@@ -67,7 +76,7 @@ def create_temporary_table(params: dict[str, Any]):
             #     "account_name": config.hs4v1_abfs_strg_acc,
             #     "account_key": config.hs4v1_abfs_strg_key,
             # },
-            storage_options = config.get_storage_options()
+            storage_options=config.get_storage_options(),
         )
 
         cursor.execute(f"DROP TABLE IF EXISTS tmp.{table_name}")
@@ -82,7 +91,7 @@ def create_temporary_table(params: dict[str, Any]):
         """
         cursor.execute(sql)
 
-        logger.info(f"   - create the temporary table 'tmp.{table_name}'")
+        logger.info(f"   - Create the temporary table 'tmp.{table_name}'")
         logger.info(f"     * elapsed time: {perf_counter() - start:.2f} (sec)")
     except Exception as e:
         logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
@@ -126,7 +135,7 @@ def merge_tables(params: dict[str, Any]):
         # logger.debug(sql)
         cursor.execute(sql)
 
-        logger.info(f"   - merge the temporary table 'tmp.{table_name}'")
+        logger.info(f"   - Merge the temporary table 'tmp.{table_name}'")
         logger.info(f"     * elapsed time: {perf_counter() - start:.2f} (sec)")
     except Exception as e:
         logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
@@ -155,7 +164,7 @@ def drop_tmp_table(params: dict[str, str]):
         cursor.execute(f"DROP TABLE IF EXISTS tmp.{table_name}")
         logger.debug(f"  - Drop the temporary table")
 
-        logger.info(f"   - drop the temporary table 'tmp.{table_name}'")
+        logger.info(f"   - Drop the temporary table 'tmp.{table_name}'")
         logger.info(f"     * elapsed time: {perf_counter() - start:.2f} (sec)")
     except Exception as e:
         logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
@@ -192,11 +201,137 @@ def insert_data(
         }
     )
 
-    # # 임시 테이블에서 데이터 복사
+    # # 임시 생성된 테이블로부터 데이터 복사
     merge_tables({"col_names": col_names, "tbl_name": tmp_tbl_name})
 
     # # 임시 테이블 및 데이터 파일 삭제
     drop_tmp_table({"tbl_name": tmp_tbl_name, "location": tmp_dir})
+
+    # # 계산 테이블 생성: 원본 데이터가 저장된 테이블로부터 계산이 요구되는 테이블 생성
+    create_calc_table()
+
+    insert_calc_data(start, end)
+
+    return
+
+
+def create_calc_table():
+    # 계산 테이블 생성
+    suffix = "calc"
+    hnum = config.hull
+    tbl_name = f"{hnum}_{suffix}"
+    location = f"{config.storage_location}/{suffix}"
+    connection = ImpalaConnection()
+    logger.info(f"👉 Create the calcuation table: '{DB_NAME}.{tbl_name}'")
+
+    # cols = [
+    #     {"ds_timestap": "TIMESTAMP"},
+    #     {"beaufort_number": "INTEGER"},
+    #     {"foc", "FLOAT"},
+    #     {"fgc", "FLOAT"},
+    # ]
+
+    sql = f"""
+        CREATE TABLE IF NOT EXISTS {DB_NAME}.{tbl_name} (
+            ds_timestamp    TIMESTAMP,
+            true_wind_speed    FLOAT,
+            true_wind_angle    FLOAT,
+            beaufort_number    INTEGER,
+            foc    FLOAT,
+            fgc    FLOAT
+        )
+        PARTITIONED BY SPEC (YEARS(ds_timestamp))
+        STORED AS ICEBERG
+        LOCATION '{location}'
+        TBLPROPERTIES (
+            'format-version' = '2',
+            'write.format.default' = 'parquet',
+            'write.parquet.compression-codec' = 'snappy',
+            'write.sort.order' = 'ds_timestamp',
+            'write.target-file-size-bytes' = '268435456'
+        )
+    """
+
+    try:
+        cursor = connection.conn.cursor()
+        cursor.execute(sql)
+
+        rs = cursor.fetchall()
+        for row in rs:
+            logger.debug(f"  - {row[0]}")
+    except Exception as e:
+        logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
+        raise e
+
+    return
+
+
+def insert_calc_data(start: str, end: str):
+    suffix = "calc"
+    hnum = config.hull
+    tgt_tbl = f"{hnum}_{suffix}"
+    src_tbl = TABLE_NAME
+    dt_format = "%Y-%m-%d 00:00:00"
+    connection = ImpalaConnection()
+
+    start = datetime.strptime(start, "%Y%m%d").strftime(dt_format)
+    end = (datetime.strptime(end, "%Y%m%d") + timedelta(days=1)).strftime(dt_format)
+
+    sql = f"""
+        INSERT OVERWRITE {DB_NAME}.{tgt_tbl} (
+            ds_timestamp,
+            true_wind_speed,
+            true_wind_angle,
+            beaufort_number
+        )
+        WITH vector_base AS (
+            SELECT
+                ds_timestamp,
+                vdr_relative_wind_speed,
+                vdr_relative_wind_angle,
+                vdr_aivdo_sog,
+                -vdr_relative_wind_speed * SIN(RADIANS(vdr_relative_wind_angle)) AS v_tx,
+                -vdr_relative_wind_speed * COS(RADIANS(vdr_relative_wind_angle)) + vdr_aivdo_sog AS v_ty
+            FROM {DB_NAME}.{src_tbl}
+            WHERE ds_timestamp >= CAST('{start}' AS TIMESTAMP)
+            AND ds_timestamp < CAST('{end}' AS TIMESTAMP)
+        ),
+        true_wind_calc AS (
+            SELECT
+                *,
+                CAST(SQRT(POWER(v_tx, 2) + POWER(v_ty, 2)) AS FLOAT) AS v_t,
+                CAST(DEGREES(ATAN2(v_tx, v_ty)) AS FLOAT) AS v_d
+            FROM vector_base
+        )
+        SELECT
+            ds_timestamp,
+            v_t AS true_wind_speed,
+            v_d AS true_wind_angle,
+            CASE
+                WHEN v_t IS NULL THEN NULL
+                WHEN v_t < 1.0  THEN 0
+                WHEN v_t < 4.0  THEN 1
+                WHEN v_t < 7.0  THEN 2
+                WHEN v_t < 11.0 THEN 3
+                WHEN v_t < 17.0 THEN 4
+                WHEN v_t < 22.0 THEN 5
+                WHEN v_t < 28.0 THEN 6
+                WHEN v_t < 34.0 THEN 7
+                WHEN v_t < 41.0 THEN 8
+                WHEN v_t < 48.0 THEN 9
+                WHEN v_t < 56.0 THEN 10
+                WHEN v_t < 64.0 THEN 11
+                ELSE 12
+            END AS beaufort_number
+        FROM true_wind_calc;
+    """
+
+    try:
+        cursor = connection.conn.cursor()
+        cursor.execute(sql)
+    except Exception as e:
+        logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
+        raise e
 
     return
 
@@ -206,12 +341,12 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
     # 생성된 테이블의 열을 배열로 반환
     start = perf_counter()
     logger.info(f"👉 Create an iceberg table named '{DB_NAME}.{TABLE_NAME}'.")
-
+    suffix = "raw"
     table_name = f"{DB_NAME}.{TABLE_NAME}"
     connection = ImpalaConnection()
 
-    # 오브젝트 스토리지의 테이블 위치
-    location = config.storage_location
+    # Azure 오브젝트 스토리지의 테이블 위치
+    location = f"{config.storage_location}/{suffix}"
 
     # column 정의
     cols = ["ds_timestamp    TIMESTAMP"]
@@ -224,7 +359,7 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
             ]
         )
     )
-    # 호선에 따른 열 추가 예외 처리
+    # 예외처리: 호선에 따른 열
     cols = append_additional_cols(cols)
     cols[1:] = sorted(cols[1:])
     cols.extend([f"id_{table_name}    BIGINT" for table_name in metadata_dict.keys()])
@@ -235,14 +370,13 @@ def create_iceberg_table(metadata_dict: dict[str, MetaData]) -> list[str]:
         CREATE TABLE IF NOT EXISTS {table_name} (
             {cols_str}
         )
-        -- PARTITIONED BY SPEC (MONTHS(ds_timestamp))
         PARTITIONED BY SPEC (YEARS(ds_timestamp))
         STORED AS ICEBERG
         LOCATION '{location}'
         TBLPROPERTIES (
             'format-version' = '2',
             'write.format.default' = 'parquet',
-            'write.parquet.compression-codec' = 'zstd',
+            'write.parquet.compression-codec' = 'snappy',
             'write.sort.order' = 'ds_timestamp',
             'write.target-file-size-bytes' = '268435456'
         )
@@ -269,7 +403,7 @@ def query_data(
 ) -> pl.DataFrame:
     """기존 테이블에서 데이터 쿼리"""
     start_time = perf_counter()
-    logger.info(f"   - query data from '{start}' to '{end}'")
+    logger.info(f"   - Query data from '{start}' to '{end}'")
 
     df_list = list()
     conn = ImpalaConnection()
@@ -346,13 +480,13 @@ def query_data(
                 df.rename(col_map)
                 .with_columns(
                     pl.from_epoch(pl.col(f"id_{table_name}"), time_unit="ms")
-                    .dt.round("15s")
-                    .cast(pl.Datetime("ms"))
-                    .alias("ds_timestamp"),
+                    # .dt.round("15s")
+                    .dt.truncate("15s").alias("ds_timestamp"),
                 )
+                .sort("ds_timestamp")
                 .group_by("ds_timestamp")
                 .agg(pl.all().first())
-                .sort("ds_timestamp")
+                .with_columns(pl.col("ds_timestamp").cast(pl.Datetime("ms")))
             )
 
             df_list.append(synced_df)
@@ -369,7 +503,7 @@ def query_data(
 
         logger.info(f"     * elapsed time: {perf_counter() - start_time: .2f} (sec)")
     except Exception as e:
-        logger.error(f"❌ {e} [{__file__}:{inspect.currentframe().f_lineno}]")
+        logger.error(f"{e} [{__file__}:{inspect.currentframe().f_lineno}]")
         raise e
 
     return combined_df

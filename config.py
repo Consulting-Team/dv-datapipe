@@ -19,10 +19,12 @@ os.chdir(base_path)
 
 @dataclass
 class Config:
+    # hull number
     hull: str
+    # start date
     start: date
+    # end date
     end: date
-    # date: date
     logger: Logger
     storage_location: str
     clear: bool
@@ -42,7 +44,6 @@ class Config:
     def display(self):
         self.logger.info("🔔 Configurations")
         self.logger.info(f"   - Hull Number: {self.hull}")
-        # self.logger.info(f"   - Input Date: {self.date}")
         self.logger.info(f"   - Start Date: {self.start}")
         self.logger.info(f"   - End Date: {self.end}")
         self.logger.info(f"   - Impala Host: {self.impala_host}")

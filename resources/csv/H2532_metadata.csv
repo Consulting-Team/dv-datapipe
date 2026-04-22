@@ -62,8 +62,27 @@ ct1_liq_avg_temp,gl,h2532_ias_ias_pivot,ct1_avgliqtemp_meas1,CT1 AVERAGE LIQUID 
 ct2_liq_avg_temp,gl,h2532_ias_ias_pivot,ct2_avgliqtemp_meas1,CT2 AVERAGE LIQUID TEMPERATURE,degC,DOUBLE
 ct3_liq_avg_temp,gl,h2532_ias_ias_pivot,ct3_avgliqtemp_meas1,CT3 AVERAGE LIQUID TEMPERATURE,degC,DOUBLE
 ct4_liq_avg_temp,gl,h2532_ias_ias_pivot,ct4_avgliqtemp_meas1,CT4 AVERAGE LIQUID TEMPERATURE,degC,DOUBLE
-prs_separator_return_flow,gl,h2532_ias_ias_pivot,gh087_01_meas1,PRS OUT GAS FLOW (FIT-002),kg/h,DOUBLE
-prs_bog_inlet_flow,gl,h2532_ias_ias_pivot,gh089_01_meas1,PRS IN GAS FLOW (FIT-001),kg/h,DOUBLE
-prs_ct_return_flow,gl,h2532_ias_ias_pivot,gh090_01_meas1,PRS COND RET FLOW,kg/h,DOUBLE
 fgc1_mtr_current,gl,h2532_ias_ias_pivot,bg103_01_meas1,NO.1 FG COMP MTR CURRENT IND,A,DOUBLE
 fgc2_mtr_current,gl,h2532_ias_ias_pivot,bg303_01_meas1,NO.2 FG COMP MTR CURRENT IND,A,DOUBLE
+ct1_vap_avg_temp,gl,h2532_ias_ias_pivot,ct1_avgvaptemp_meas1,CT1 Average Vapor Temperature ,degC,DOUBLE
+ct2_vap_avg_temp,gl,h2532_ias_ias_pivot,ct2_avgvaptemp_meas1,CT2 Average Vapor Temperature ,degC,DOUBLE
+ct3_vap_avg_temp,gl,h2532_ias_ias_pivot,ct3_avgvaptemp_meas1,CT3 Average Vapor Temperature,degC,DOUBLE
+ct4_vap_avg_temp,gl,h2532_ias_ias_pivot,ct4_avgvaptemp_meas1,CT4 Average Vapor Temperature,degC,DOUBLE
+ct1_abs_press,gl,h2532_ias_ias_pivot,ct1_pressabs_meas1,CT1 PRESS ABSOLUTE,mbara,DOUBLE
+ct2_abs_press,gl,h2532_ias_ias_pivot,ct2_pressabs_meas1,CT2 PRESS ABSOLUTE,mbara,DOUBLE
+ct3_abs_press,gl,h2532_ias_ias_pivot,ct3_pressabs_meas1,CT3 PRESS ABSOLUTE,mbara,DOUBLE
+ct4_abs_press,gl,h2532_ias_ias_pivot,ct4_pressabs_meas1,CT4 PRESS ABSOLUTE,mbara,DOUBLE
+ct_vap_hdr_fwd_temp,gl,h2532_ias_ias_pivot,gh001_01_meas1,VAP HDR FWD TEMP,degC,DOUBLE
+ct_vap_hdr_aft_temp,gl,h2532_ias_ias_pivot,gh002_01_meas1,VAP HDR AFT TEMP,degC,DOUBLE
+ct_vap_hdr_abs_press,gl,h2532_ias_ias_pivot,gh020_01_y,VAP HDR ABSOLUTE PRESS(GMS),mbara,DOUBLE
+reliq_lowpress_inlet_temp,gl,h2532_ias_ias_pivot,pr010_01_meas1,FRS PCHE- LOW PRESS BOG INLET TEMP,degC,DOUBLE
+reliq_lowpress_outlet_temp,gl,h2532_ias_ias_pivot,pr011_01_meas1,FRS PCHE- LOW PRESS BOG OUTLET TEMP,degC,DOUBLE
+reliq_highpress_inlet_temp,gl,h2532_ias_ias_pivot,pr012_01_meas1,FRS PCHE- HIGH PRESS BOG INLET TEMP H,degC,DOUBLE
+reliq_highpress_outlet_temp,gl,h2532_ias_ias_pivot,pr013_01_meas1,FRS PCHE- HIGH PRESS BOG OUTLET TEMP H,degC,DOUBLE
+reliq_separator_return_flow,gl,h2532_ias_ias_pivot,gh087_01_meas1,PRS OUT GAS FLOW (FIT-002),kg/h,DOUBLE
+reliq_bog_inlet_flow,gl,h2532_ias_ias_pivot,gh089_01_meas1,PRS IN GAS FLOW (FIT-001),kg/h,DOUBLE
+reliq_ct_return_flow,gl,h2532_ias_ias_pivot,gh090_01_meas1,PRS COND RET FLOW,kg/h,DOUBLE
+reliq_lowpress_inlet_press,gl,h2532_ias_ias_pivot,pr020_01_meas1,FRS PCHE- LOW PRESS BOG INLET PRESS L,bar,DOUBLE
+reliq_lowpress_outlet_diff_press,gl,h2532_ias_ias_pivot,pr021_01_meas1,FRS PCHE- LOW PRESS BOG OUTLET DIFF PRESS H,bar,DOUBLE
+reliq_highpress_inlet_press,gl,h2532_ias_ias_pivot,pr022_01_meas1,FRS PCHE- HIGH PRESS BOG INLET PRESS H,bar,DOUBLE
+reliq_highpress_outlet_diff_press,gl,h2532_ias_ias_pivot,pr023_01_meas1,FRS PCHE- HIGH PRESS BOG OUTLET DIFF PRESS H,bar,DOUBLE

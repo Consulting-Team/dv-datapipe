@@ -7,6 +7,7 @@ from polars import DataFrame
 
 @dataclass
 class MetaData:
+    hnum: str
     col_name: str
     tag: str
     description: str
@@ -79,6 +80,8 @@ def get_schema(metadata_dict: dict[str, list[MetaData]]):
                     schema[col_name] = pl.Int32
                 case "BOOLEAN":
                     schema[col_name] = pl.Boolean
+                case "FLOAT":
+                    schema[col_name] = pl.Float32
                 case _:
                     err_msg = f"❌ Not acceptable data type of {col_name}:{data_type}"
                     logger.error(err_msg)

@@ -1,72 +1,91 @@
-col_name,db_name,table_name,tag,description,unit,data_type
-vdr_aivdo_lat,hlng,h2521_vdr_aivdo1_pivot,latitude,latitude,deg,DOUBLE
-vdr_aivdo_lon,hlng,h2521_vdr_aivdo1_pivot,longitude,longitude,deg,DOUBLE
-vdr_aivdo_sog,hlng,h2521_vdr_aivdo1_pivot,speed_over_ground,speed_over_ground,kn,DOUBLE
-vdr_aivdo_cog,hlng,h2521_vdr_aivdo1_pivot,course_over_ground,course_over_ground,deg,DOUBLE
-vdr_lon_water_speed,hlng,h2521_vdr_vdvbw_pivot,longitudinal_water_speed,longitudinal_water_speed,kn,DOUBLE
-vdr_trav_water_speed,hlng,h2521_vdr_vdvbw_pivot,traverse_water_speed,traverse_water_speed,kn,DOUBLE
-vdr_relative_wind_speed,hlng,h2521_vdr_yxmwv_pivot,wind_speed,wind_speed,kn,DOUBLE
-vdr_relative_wind_angle,hlng,h2521_vdr_yxmwv_pivot,wind_angle,wind_angle,deg,DOUBLE
-ship_heading,hlng,h2521_vdr_aivdo1_pivot,true_heading,heading,deg,DOUBLE
-ship_fwd_draft,hlng,h2521_ias_ias_no1_pivot,rg009_01_daca_pv,FWD DRAFT LVL,m,DOUBLE
-ship_aft_draft,hlng,h2521_ias_ias_no1_pivot,rg012_01_daca_pv,AFT DRAFT LVL,m,DOUBLE
-ship_mid_stbd_draft,hlng,h2521_ias_ias_no1_pivot,rg011_01_daca_pv,MID DRAFT STBD LVL,m,DOUBLE
-ship_mid_port_draft,hlng,h2521_ias_ias_no1_pivot,rg010_01_daca_pv,MID DRAFT PORT LVL,m,DOUBLE
-ship_trim,hlng,h2521_ias_ias_no1_pivot,trimcal_rg019_pv,TRIM,m,DOUBLE
-ship_list,hlng,h2521_ias_ias_no1_pivot,trimcal_rg018_pv,LIST,deg,DOUBLE
-ship_rudder_port_angle,hlng,h2521_vdr_agrsa_pivot,port_rudder_sensor,port_rudder_sensor,deg,DOUBLE
-ship_rudder_stbd_angle,hlng,h2521_vdr_agrsa_pivot,starboard_rudder_sensor,starboard_rudder_sensor,deg,DOUBLE
-me1_fg_flow,hlng,h2521_ias_ias_no1_pivot,gf022_daca_pv,ME(S) GAS FLOW,kg/h,DOUBLE
-me2_fg_flow,hlng,h2521_ias_ias_no1_pivot,gf045_daca_pv,ME(S) GAS FLOW,kg/h,DOUBLE
-me1_fo_flow,hlng,h2521_ias_ias_no1_pivot,om013_01_daca_pv,ME(S) FO INLET FLOW IND,kg/h,DOUBLE
-me2_fo_flow,hlng,h2521_ias_ias_no1_pivot,om034_01_daca_pv,ME(P) FO INLET FLOW IND,kg/h,DOUBLE
-me1_shaft_power,hlng,h2521_ias_ias_no1_pivot,sg0002_pv,NO.1 M/E SHAFT POWER,kW,DOUBLE
-me2_shaft_power,hlng,h2521_ias_ias_no1_pivot,sg0012_pv,NO.2 M/E SHAFT POWER,kW,DOUBLE
-me1_shaft_rpm,hlng,h2521_ias_ias_no1_pivot,sg0008_pv,NO.1 M/E SHAFT RPM,rpm,DOUBLE
-me2_shaft_rpm,hlng,h2521_ias_ias_no1_pivot,sg0018_pv,NO.2 M/E SHAFT RPM,rpm,DOUBLE
-me1_shaft_torque,hlng,h2521_ias_ias_no1_pivot,sg0006_pv,NO.1 M/E SHAFT TORQUE,kNm,DOUBLE
-me2_shaft_torque,hlng,h2521_ias_ias_no1_pivot,sg0016_pv,NO.2 M/E SHAFT TORQUE,kNm,DOUBLE
-me1_load,hlng,h2521_ias_ias_no1_pivot,tx065_daca_pv,ME(S) LOAD IND,%,DOUBLE
-me2_load,hlng,h2521_ias_ias_no1_pivot,tx165_daca_pv,ME(P) LOAD IND,%,DOUBLE
-me1_fo_vlsfo_use,hlng,h2521_ias_ias_no2_pivot,om_om002_02_digacqa_pvfl,ME(S) FO VLSFO USE IND,-,BOOLEAN
-me2_fo_vlsfo_use,hlng,h2521_ias_ias_no2_pivot,om_om104_02_digacqa_pvfl,ME(P) FO VLSFO USE IND,-,BOOLEAN
-me1_fo_lsmgo_use,hlng,h2521_ias_ias_no2_pivot,om_om204_02_digacqa_pvfl,ME(S) FO LSMGO USE IND,-,BOOLEAN
-me2_fo_lsmgo_use,hlng,h2521_ias_ias_no2_pivot,om_om208_02_digacqa_pvfl,ME(P) FO LSMGO USE IND,-,BOOLEAN
-me1_fg_use,hlng,h2521_ias_ias_no2_pivot,gf017_digacqa_pvfl,ME(S) ME GAS SUPPLY RUNNING,-,BOOLEAN
-me2_fg_use,hlng,h2521_ias_ias_no2_pivot,gf040_digacqa_pvfl,ME(P) ME GAS SUPPLY RUNNING,-,BOOLEAN
-ge_fg_flow,hlng,h2521_ias_ias_no1_pivot,gf054_01_daca_pv,GE FUEL GAS INLET FLOW IND,kg/h,DOUBLE
-ge_fo_flow,hlng,h2521_ias_ias_no1_pivot,oe012_01_daca_pv,GE FO INLET FLOW IND,kg/h,DOUBLE
-ge1_power,hlng,h2521_ias_ias_no1_pivot,pm102_01_daca_pv,DFGE1 PWR,kW,DOUBLE
-ge3_power,hlng,h2521_ias_ias_no1_pivot,pm302_01_daca_pv,DFGE3 PWR,kW,DOUBLE
-ge2_1_power,hlng,h2521_ias_ias_no1_pivot,pm202_01_daca_pv,DFGE2-1 PWR,kW,DOUBLE
-ge2_2_power,hlng,h2521_ias_ias_no1_pivot,pm204_01_daca_pv,DFGE2-2 PWR,kW,DOUBLE
-ge1_load,hlng,h2521_ias_ias_no1_pivot,gx13321_pv,DFGE1 ENGINE LOAD,%,DOUBLE
-ge2_load,hlng,h2521_ias_ias_no1_pivot,gx23321_pv,DFGE2 ENGINE LOAD,%,DOUBLE
-ge3_load,hlng,h2521_ias_ias_no1_pivot,gx33321_pv,DFGE3 ENGINE LOAD,%,DOUBLE
-ge1_fg_use,hlng,h2521_ias_ias_no2_pivot,gx109_digacqa_pvfl,DFGE1 GAS MODE ACTIVE,-,BOOLEAN
-ge2_fg_use,hlng,h2521_ias_ias_no2_pivot,gx209_digacqa_pvfl,DFGE2 GAS MODE ACTIVE,-,BOOLEAN
-ge3_fg_use,hlng,h2521_ias_ias_no2_pivot,gx309_digacqa_pvfl,DFGE3 GAS MODE ACTIVE,-,BOOLEAN
-auxb_fo_flow,hlng,h2521_ias_ias_no1_pivot,ob001_02_daca_pv,AUX BOILER FO,kg/h,DOUBLE
-auxb1_fo_lsmgo_use,hlng,h2521_ias_ias_no3_pivot,ob1003_00_pv,NO.1 AUX BOILER LSMGO USE,-,BOOLEAN
-auxb1_fo_vlsfo_use,hlng,h2521_ias_ias_no3_pivot,ob1003_01_pv,NO.1 AUX BOILER VLSFO USE,-,BOOLEAN
-auxb2_fo_lsmgo_use,hlng,h2521_ias_ias_no3_pivot,ob2003_00_pv,NO.2 AUX BOILER LSMGO USE,-,BOOLEAN
-auxb2_fo_vlsfo_use,hlng,h2521_ias_ias_no3_pivot,ob2003_01_pv,NO.2 AUX BOILER VLSFO USE,-,BOOLEAN
-gcu_flow,hlng,h2521_ias_ias_no1_pivot,gc0016_pv,GCU FLOW,kg/h,DOUBLE
-sg1_active_power,hlng,h2521_ias_ias_no1_pivot,pm519_daca_pv,SG1 ACTIVE POWER FROM SWBD,kW,DOUBLE
-sg2_active_power,hlng,h2521_ias_ias_no1_pivot,pm619_daca_pv,SG2 ACTUAL ACTIVE POWER,kW,DOUBLE
-sg1_reactive_power,hlng,h2521_ias_ias_no1_pivot,pm520_daca_pv,SG1 ACTUAL REACTIVE POWER,kW,DOUBLE
-sg2_reactive_power,hlng,h2521_ias_ias_no1_pivot,pm620_daca_pv,SG2 ACTUAL REACTIVE POWER,kW,DOUBLE
-als1_comp_power,hlng,h2521_ias_ias_no1_pivot,as0007_pv,NO.1 ALS COMP MOTOR KW VALUE,kW,DOUBLE
-als2_comp_power,hlng,h2521_ias_ias_no1_pivot,as0014_pv,NO.2 ALS COMP MOTOR KW VALUE,kW,DOUBLE
-ct1_liq_volume,hlng,h2521_ias_ias_no1_pivot,ct0401_pv,CT1 LIQUID VOLUME,m3,DOUBLE
-ct2_liq_volume,hlng,h2521_ias_ias_no1_pivot,ct0402_pv,CT2 LIQUID VOLUME,m3,DOUBLE
-ct3_liq_volume,hlng,h2521_ias_ias_no1_pivot,ct0403_pv,CT3 LIQUID VOLUME,m3,DOUBLE
-ct4_liq_volume,hlng,h2521_ias_ias_no1_pivot,ct0404_pv,CT4 LIQUID VOLUME,m3,DOUBLE
-ct1_liq_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1301_pv,CT1 AVERAGE LIQUID TEMPERATURE,degC,DOUBLE
-ct2_liq_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1302_pv,CT2 AVERAGE LIQUID TEMPERATURE,degC,DOUBLE
-ct3_liq_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1303_pv,CT3 AVERAGE LIQUID TEMPERATURE,degC,DOUBLE
-ct4_liq_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1304_pv,CT4 AVERAGE LIQUID TEMPERATURE,degC,DOUBLE
-prs_separator_return_flow,hlng,h2521_ias_ias_no1_pivot,pr_fit001_01_daca_pv,PRS SEPARATOR RETURN GAS OUTLET FLOW,kg/h,DOUBLE
-prs_bog_inlet_flow,hlng,h2521_ias_ias_no1_pivot,pr_fit002_01_daca_pv,PRS DCHE HP BOG INLET FLOW,kg/h,DOUBLE
-prs_ct_return_flow,hlng,h2521_ias_ias_no1_pivot,pr033_01_daca_pv,PRS COND RETURN TO C TK FLOW,kg/h,DOUBLE
-fgc1_mtr_current,hlng,h2521_ias_ias_no1_pivot,bg110_06_daca_pv,FG COMP MTR CURRENT,A,DOUBLE
+﻿hnum,col_name,db_name,table_name,tag,description,unit,data_type
+H2521,vdr_aivdo_lat,hlng,h2521_vdr_aivdo1_pivot,latitude,latitude,deg,FLOAT
+H2521,vdr_aivdo_lon,hlng,h2521_vdr_aivdo1_pivot,longitude,longitude,deg,FLOAT
+H2521,vdr_aivdo_sog,hlng,h2521_vdr_aivdo1_pivot,speed_over_ground,speed_over_ground,kn,FLOAT
+H2521,vdr_aivdo_cog,hlng,h2521_vdr_aivdo1_pivot,course_over_ground,course_over_ground,deg,FLOAT
+H2521,vdr_lon_water_speed,hlng,h2521_vdr_vdvbw_pivot,longitudinal_water_speed,longitudinal_water_speed,kn,FLOAT
+H2521,vdr_trav_water_speed,hlng,h2521_vdr_vdvbw_pivot,traverse_water_speed,traverse_water_speed,kn,FLOAT
+H2521,vdr_relative_wind_speed,hlng,h2521_vdr_yxmwv_pivot,wind_speed,wind_speed,kn,FLOAT
+H2521,vdr_relative_wind_angle,hlng,h2521_vdr_yxmwv_pivot,wind_angle,wind_angle,deg,FLOAT
+H2521,ship_heading,hlng,h2521_vdr_aivdo1_pivot,true_heading,heading,deg,FLOAT
+H2521,ship_fwd_draft,hlng,h2521_ias_ias_no1_pivot,rg009_01_daca_pv,FWD DRAFT LVL,m,FLOAT
+H2521,ship_aft_draft,hlng,h2521_ias_ias_no1_pivot,rg012_01_daca_pv,AFT DRAFT LVL,m,FLOAT
+H2521,ship_mid_stbd_draft,hlng,h2521_ias_ias_no1_pivot,rg011_01_daca_pv,MID DRAFT STBD LVL,m,FLOAT
+H2521,ship_mid_port_draft,hlng,h2521_ias_ias_no1_pivot,rg010_01_daca_pv,MID DRAFT PORT LVL,m,FLOAT
+H2521,ship_trim,hlng,h2521_ias_ias_no1_pivot,trimcal_rg019_pv,TRIM,m,FLOAT
+H2521,ship_list,hlng,h2521_ias_ias_no1_pivot,trimcal_rg018_pv,LIST,deg,FLOAT
+H2521,ship_rudder_port_angle,hlng,h2521_vdr_agrsa_pivot,port_rudder_sensor,port_rudder_sensor,deg,FLOAT
+H2521,ship_rudder_stbd_angle,hlng,h2521_vdr_agrsa_pivot,starboard_rudder_sensor,starboard_rudder_sensor,deg,FLOAT
+H2521,me1_fg_flow,hlng,h2521_ias_ias_no1_pivot,gf022_daca_pv,ME(S) GAS FLOW,kg/h,FLOAT
+H2521,me2_fg_flow,hlng,h2521_ias_ias_no1_pivot,gf045_daca_pv,ME(S) GAS FLOW,kg/h,FLOAT
+H2521,me1_fo_flow,hlng,h2521_ias_ias_no1_pivot,om013_01_daca_pv,ME(S) FO INLET FLOW IND,kg/h,FLOAT
+H2521,me2_fo_flow,hlng,h2521_ias_ias_no1_pivot,om034_01_daca_pv,ME(P) FO INLET FLOW IND,kg/h,FLOAT
+H2521,me1_shaft_power,hlng,h2521_ias_ias_no1_pivot,sg0002_pv,NO.1 M/E SHAFT POWER,kW,FLOAT
+H2521,me2_shaft_power,hlng,h2521_ias_ias_no1_pivot,sg0012_pv,NO.2 M/E SHAFT POWER,kW,FLOAT
+H2521,me1_shaft_rpm,hlng,h2521_ias_ias_no1_pivot,sg0008_pv,NO.1 M/E SHAFT RPM,rpm,FLOAT
+H2521,me2_shaft_rpm,hlng,h2521_ias_ias_no1_pivot,sg0018_pv,NO.2 M/E SHAFT RPM,rpm,FLOAT
+H2521,me1_shaft_torque,hlng,h2521_ias_ias_no1_pivot,sg0006_pv,NO.1 M/E SHAFT TORQUE,kNm,FLOAT
+H2521,me2_shaft_torque,hlng,h2521_ias_ias_no1_pivot,sg0016_pv,NO.2 M/E SHAFT TORQUE,kNm,FLOAT
+H2521,me1_load,hlng,h2521_ias_ias_no1_pivot,tx065_daca_pv,ME(S) LOAD IND,%,FLOAT
+H2521,me2_load,hlng,h2521_ias_ias_no1_pivot,tx165_daca_pv,ME(P) LOAD IND,%,FLOAT
+H2521,me1_fo_vlsfo_use,hlng,h2521_ias_ias_no2_pivot,om_om002_02_digacqa_pvfl,ME(S) FO VLSFO USE IND,-,BOOLEAN
+H2521,me2_fo_vlsfo_use,hlng,h2521_ias_ias_no2_pivot,om_om104_02_digacqa_pvfl,ME(P) FO VLSFO USE IND,-,BOOLEAN
+H2521,me1_fo_lsmgo_use,hlng,h2521_ias_ias_no2_pivot,om_om204_02_digacqa_pvfl,ME(S) FO LSMGO USE IND,-,BOOLEAN
+H2521,me2_fo_lsmgo_use,hlng,h2521_ias_ias_no2_pivot,om_om208_02_digacqa_pvfl,ME(P) FO LSMGO USE IND,-,BOOLEAN
+H2521,me1_fg_use,hlng,h2521_ias_ias_no2_pivot,gf017_digacqa_pvfl,ME(S) ME GAS SUPPLY RUNNING,-,BOOLEAN
+H2521,me2_fg_use,hlng,h2521_ias_ias_no2_pivot,gf040_digacqa_pvfl,ME(P) ME GAS SUPPLY RUNNING,-,BOOLEAN
+H2521,ge_fg_flow,hlng,h2521_ias_ias_no1_pivot,gf054_01_daca_pv,GE FUEL GAS INLET FLOW IND,kg/h,FLOAT
+H2521,ge_fo_flow,hlng,h2521_ias_ias_no1_pivot,oe012_01_daca_pv,GE FO INLET FLOW IND,kg/h,FLOAT
+H2521,ge1_power,hlng,h2521_ias_ias_no1_pivot,pm102_01_daca_pv,DFGE1 PWR,kW,FLOAT
+H2521,ge3_power,hlng,h2521_ias_ias_no1_pivot,pm302_01_daca_pv,DFGE3 PWR,kW,FLOAT
+H2521,ge2_1_power,hlng,h2521_ias_ias_no1_pivot,pm202_01_daca_pv,DFGE2-1 PWR,kW,FLOAT
+H2521,ge2_2_power,hlng,h2521_ias_ias_no1_pivot,pm204_01_daca_pv,DFGE2-2 PWR,kW,FLOAT
+H2521,ge1_load,hlng,h2521_ias_ias_no1_pivot,gx13321_pv,DFGE1 ENGINE LOAD,%,FLOAT
+H2521,ge2_load,hlng,h2521_ias_ias_no1_pivot,gx23321_pv,DFGE2 ENGINE LOAD,%,FLOAT
+H2521,ge3_load,hlng,h2521_ias_ias_no1_pivot,gx33321_pv,DFGE3 ENGINE LOAD,%,FLOAT
+H2521,ge1_fg_use,hlng,h2521_ias_ias_no2_pivot,gx109_digacqa_pvfl,DFGE1 GAS MODE ACTIVE,-,BOOLEAN
+H2521,ge2_fg_use,hlng,h2521_ias_ias_no2_pivot,gx209_digacqa_pvfl,DFGE2 GAS MODE ACTIVE,-,BOOLEAN
+H2521,ge3_fg_use,hlng,h2521_ias_ias_no2_pivot,gx309_digacqa_pvfl,DFGE3 GAS MODE ACTIVE,-,BOOLEAN
+H2521,auxb_fo_flow,hlng,h2521_ias_ias_no1_pivot,ob001_02_daca_pv,AUX BOILER FO,kg/h,FLOAT
+H2521,auxb1_fo_lsmgo_use,hlng,h2521_ias_ias_no3_pivot,ob1003_00_pv,NO.1 AUX BOILER LSMGO USE,-,BOOLEAN
+H2521,auxb1_fo_vlsfo_use,hlng,h2521_ias_ias_no3_pivot,ob1003_01_pv,NO.1 AUX BOILER VLSFO USE,-,BOOLEAN
+H2521,auxb2_fo_lsmgo_use,hlng,h2521_ias_ias_no3_pivot,ob2003_00_pv,NO.2 AUX BOILER LSMGO USE,-,BOOLEAN
+H2521,auxb2_fo_vlsfo_use,hlng,h2521_ias_ias_no3_pivot,ob2003_01_pv,NO.2 AUX BOILER VLSFO USE,-,BOOLEAN
+H2521,gcu_flow,hlng,h2521_ias_ias_no1_pivot,gc0016_pv,GCU FLOW,kg/h,FLOAT
+H2521,sg1_active_power,hlng,h2521_ias_ias_no1_pivot,pm519_daca_pv,SG1 ACTIVE POWER FROM SWBD,kW,FLOAT
+H2521,sg2_active_power,hlng,h2521_ias_ias_no1_pivot,pm619_daca_pv,SG2 ACTUAL ACTIVE POWER,kW,FLOAT
+H2521,sg1_reactive_power,hlng,h2521_ias_ias_no1_pivot,pm520_daca_pv,SG1 ACTUAL REACTIVE POWER,kW,FLOAT
+H2521,sg2_reactive_power,hlng,h2521_ias_ias_no1_pivot,pm620_daca_pv,SG2 ACTUAL REACTIVE POWER,kW,FLOAT
+H2521,als1_comp_power,hlng,h2521_ias_ias_no1_pivot,as0007_pv,NO.1 ALS COMP MOTOR KW VALUE,kW,FLOAT
+H2521,als2_comp_power,hlng,h2521_ias_ias_no1_pivot,as0014_pv,NO.2 ALS COMP MOTOR KW VALUE,kW,FLOAT
+H2521,ct1_liq_volume,hlng,h2521_ias_ias_no1_pivot,ct0401_pv,CT1 LIQUID VOLUME,m3,FLOAT
+H2521,ct2_liq_volume,hlng,h2521_ias_ias_no1_pivot,ct0402_pv,CT2 LIQUID VOLUME,m3,FLOAT
+H2521,ct3_liq_volume,hlng,h2521_ias_ias_no1_pivot,ct0403_pv,CT3 LIQUID VOLUME,m3,FLOAT
+H2521,ct4_liq_volume,hlng,h2521_ias_ias_no1_pivot,ct0404_pv,CT4 LIQUID VOLUME,m3,FLOAT
+H2521,ct1_liq_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1301_pv,CT1 AVERAGE LIQUID TEMPERATURE,degC,FLOAT
+H2521,ct2_liq_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1302_pv,CT2 AVERAGE LIQUID TEMPERATURE,degC,FLOAT
+H2521,ct3_liq_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1303_pv,CT3 AVERAGE LIQUID TEMPERATURE,degC,FLOAT
+H2521,ct4_liq_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1304_pv,CT4 AVERAGE LIQUID TEMPERATURE,degC,FLOAT
+H2521,fgc1_mtr_current,hlng,h2521_ias_ias_no1_pivot,bg110_06_daca_pv,FG COMP MTR CURRENT,A,FLOAT
+H2521,ct1_vap_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1401_pv,CT1 Average Vapor Temperature ,degC,FLOAT
+H2521,ct2_vap_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1402_pv,CT2 Average Vapor Temperature ,degC,FLOAT
+H2521,ct3_vap_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1403_pv,CT3 Average Vapor Temperature,degC,FLOAT
+H2521,ct4_vap_avg_temp,hlng,h2521_ias_ias_no1_pivot,ct1404_pv,CT4 Average Vapor Temperature,degC,FLOAT
+H2521,ct1_abs_press,hlng,h2521_ias_ias_no1_pivot,ct0301_pv,CT1 PRESS ABSOLUTE,mbara,FLOAT
+H2521,ct2_abs_press,hlng,h2521_ias_ias_no1_pivot,ct0302_pv,CT2 PRESS ABSOLUTE,mbara,FLOAT
+H2521,ct3_abs_press,hlng,h2521_ias_ias_no1_pivot,ct0303_pv,CT3 PRESS ABSOLUTE,mbara,FLOAT
+H2521,ct4_abs_press,hlng,h2521_ias_ias_no1_pivot,ct0304_pv,CT4 PRESS ABSOLUTE,mbara,FLOAT
+H2521,ct_vap_hdr_fwd_temp,hlng,h2521_ias_ias_no1_pivot,gh001_daca_pv,VAPOR HDR FWD TEMP,degC,FLOAT
+H2521,ct_vap_hdr_aft_temp,hlng,h2521_ias_ias_no1_pivot,gh002_daca_pv,VAPOR HDR AFT TEMP,degC,FLOAT
+H2521,ct_vap_hdr_abs_press,hlng,h2521_ias_ias_no1_pivot,gh_pic020l_daca_pv,VAPOR HEADER ABS PRESS,mbara,FLOAT
+H2521,reliq_lowpress_inlet_temp,hlng,h2521_ias_ias_no1_pivot,pr_tit001_daca_pv,PRS DCHE LP BOG INLET TEMP,degC,FLOAT
+H2521,reliq_lowpress_outlet_temp,hlng,h2521_ias_ias_no1_pivot,pr_tit002_daca_pv,PRS DCHE LP BOG OUTLET TEMP,degC,FLOAT
+H2521,reliq_highpress_inlet_temp,hlng,h2521_ias_ias_no1_pivot,pr_tit003_daca_pv,PRS DCHE HP BOG INLET TEMP,degC,FLOAT
+H2521,reliq_highpress_outlet_temp,hlng,h2521_ias_ias_no1_pivot,pr_tit004_daca_pv,PRS DCHE HP BOG OUTLET TEMP,degC,FLOAT
+H2521,reliq_separator_return_flow,hlng,h2521_ias_ias_no1_pivot,pr_fit001_01_daca_pv,PRS SEPARATOR RETURN GAS OUTLET FLOW,kg/h,FLOAT
+H2521,reliq_bog_inlet_flow,hlng,h2521_ias_ias_no1_pivot,pr_fit002_01_daca_pv,PRS DCHE HP BOG INLET FLOW,kg/h,FLOAT
+H2521,reliq_ct_return_flow,hlng,h2521_ias_ias_no1_pivot,pr033_01_daca_pv,PRS COND RETURN TO C TK FLOW,kg/h,FLOAT
+H2521,reliq_lowpress_inlet_press,hlng,h2521_ias_ias_no1_pivot,pr_pit001_daca_pv,PRS DCHE LP BOG INLET PRESS,bar,FLOAT
+H2521,reliq_lowpress_outlet_diff_press,hlng,h2521_ias_ias_no1_pivot,pr_pdit001_daca_pv,PRS DCHE LP BOG INLET/OUTLET DIFF PRESS,bar,FLOAT
+H2521,reliq_highpress_inlet_press,hlng,h2521_ias_ias_no1_pivot,pr_pit003_daca_pv,PRS DCHE HP BOG INLET PRESS(CG508),bar,FLOAT
+H2521,reliq_highpress_outlet_diff_press,hlng,h2521_ias_ias_no1_pivot,pr_pdit002_daca_pv,PRS DCHE HP BOG INLET/OUTLET DIFF PRESS,bar,FLOAT
