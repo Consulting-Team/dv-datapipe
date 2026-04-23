@@ -289,61 +289,124 @@ def insert_calc_data(start: str, end: str):
     #         me_out_pwr
     # """
 
+    # sql = f"""
+    #     INSERT OVERWRITE {DB_NAME}.{tgt_tbl} (
+    #         ds_timestamp,
+    #         true_wind_speed,
+    #         true_wind_angle,
+    #         beaufort_number,
+    #         foc,
+    #         fgc
+    #     )
+    #     WITH vector_base AS (
+    #         SELECT
+    #             ds_timestamp,
+    #             vdr_relative_wind_speed,
+    #             vdr_relative_wind_angle,
+    #             vdr_aivdo_sog,
+    #             -vdr_relative_wind_speed * SIN(RADIANS(vdr_relative_wind_angle)) AS v_tx,
+    #             -vdr_relative_wind_speed * COS(RADIANS(vdr_relative_wind_angle)) + vdr_aivdo_sog AS v_ty,
+    #             me_fo_flow + ge_fo_flow + auxb_fo_flow as foc,
+    #             me_fg_flow + ge_fg_flow as fgc
+    #         FROM {DB_NAME}.{src_tbl}
+    #         WHERE ds_timestamp >= CAST('{start}' AS TIMESTAMP)
+    #         AND ds_timestamp < CAST('{end}' AS TIMESTAMP)
+    #     ),
+    #     true_wind_calc AS (
+    #         SELECT
+    #             ds_timestamp,
+    #             SQRT(POWER(v_tx, 2) + POWER(v_ty, 2)) AS v_t,
+    #             DEGREES(ATAN2(v_tx, v_ty)) AS v_d,
+    #             foc,
+    #             fgc
+    #         FROM vector_base
+    #     )
+    #     SELECT
+    #         ds_timestamp,
+    #         CAST(v_t AS FLOAT) AS true_wind_speed,
+    #         CAST(v_d AS FLOAT) as true_wind_angle,
+    #         CASE
+    #             WHEN v_t IS NULL THEN NULL
+    #             WHEN v_t < 1.0  THEN 0
+    #             WHEN v_t < 4.0  THEN 1
+    #             WHEN v_t < 7.0  THEN 2
+    #             WHEN v_t < 11.0 THEN 3
+    #             WHEN v_t < 17.0 THEN 4
+    #             WHEN v_t < 22.0 THEN 5
+    #             WHEN v_t < 28.0 THEN 6
+    #             WHEN v_t < 34.0 THEN 7
+    #             WHEN v_t < 41.0 THEN 8
+    #             WHEN v_t < 48.0 THEN 9
+    #             WHEN v_t < 56.0 THEN 10
+    #             WHEN v_t < 64.0 THEN 11
+    #             ELSE 12
+    #         END AS beaufort_number,
+    #         CAST(foc AS FLOAT),
+    #         CAST(fgc AS FLOAT)
+    #     FROM true_wind_calc;
+    # """
+
     sql = f"""
-        INSERT OVERWRITE {DB_NAME}.{tgt_tbl} (
-            ds_timestamp,
-            true_wind_speed,
-            true_wind_angle,
-            beaufort_number,
-            foc,
-            fgc
-        )
-        WITH vector_base AS (
+        MERGE INTO {DB_NAME}.{tgt_tbl} AS target
+        USING (
+            WITH vector_base AS (
+                SELECT
+                    ds_timestamp,
+                    vdr_relative_wind_speed,
+                    vdr_relative_wind_angle,
+                    vdr_aivdo_sog,
+                    -vdr_relative_wind_speed * SIN(RADIANS(vdr_relative_wind_angle)) AS v_tx,
+                    -vdr_relative_wind_speed * COS(RADIANS(vdr_relative_wind_angle)) + vdr_aivdo_sog AS v_ty,
+                    me_fo_flow + ge_fo_flow + auxb_fo_flow AS foc_raw,
+                    me_fg_flow + ge_fg_flow AS fgc_raw
+                FROM {DB_NAME}.{src_tbl}
+                WHERE ds_timestamp >= CAST('{start}' AS TIMESTAMP)
+                AND ds_timestamp < CAST('{end}' AS TIMESTAMP)
+            ),
+            true_wind_calc AS (
+                SELECT
+                    ds_timestamp,
+                    SQRT(POWER(v_tx, 2) + POWER(v_ty, 2)) AS v_t,
+                    (DEGREES(ATAN2(v_tx, v_ty)) + 360) % 360 AS v_d,
+                    foc_raw,
+                    fgc_raw
+                FROM vector_base
+            )
             SELECT
                 ds_timestamp,
-                vdr_relative_wind_speed,
-                vdr_relative_wind_angle,
-                vdr_aivdo_sog,
-                -vdr_relative_wind_speed * SIN(RADIANS(vdr_relative_wind_angle)) AS v_tx,
-                -vdr_relative_wind_speed * COS(RADIANS(vdr_relative_wind_angle)) + vdr_aivdo_sog AS v_ty,
-                me_fo_flow + ge_fo_flow + auxb_fo_flow as foc,
-                me_fg_flow + ge_fg_flow as fgc
-            FROM {DB_NAME}.{src_tbl}
-            WHERE ds_timestamp >= CAST('{start}' AS TIMESTAMP)
-            AND ds_timestamp < CAST('{end}' AS TIMESTAMP)
-        ),
-        true_wind_calc AS (
-            SELECT
-                ds_timestamp,
-                SQRT(POWER(v_tx, 2) + POWER(v_ty, 2)) AS v_t,
-                DEGREES(ATAN2(v_tx, v_ty)) AS v_d,
-                foc,
-                fgc
-            FROM vector_base
-        )
-        SELECT
-            ds_timestamp,
-            CAST(v_t AS FLOAT) AS true_wind_speed,
-            CAST(v_d AS FLOAT) as true_wind_angle,
-            CASE
-                WHEN v_t IS NULL THEN NULL
-                WHEN v_t < 1.0  THEN 0
-                WHEN v_t < 4.0  THEN 1
-                WHEN v_t < 7.0  THEN 2
-                WHEN v_t < 11.0 THEN 3
-                WHEN v_t < 17.0 THEN 4
-                WHEN v_t < 22.0 THEN 5
-                WHEN v_t < 28.0 THEN 6
-                WHEN v_t < 34.0 THEN 7
-                WHEN v_t < 41.0 THEN 8
-                WHEN v_t < 48.0 THEN 9
-                WHEN v_t < 56.0 THEN 10
-                WHEN v_t < 64.0 THEN 11
-                ELSE 12
-            END AS beaufort_number,
-            CAST(foc AS FLOAT),
-            CAST(fgc AS FLOAT)
-        FROM true_wind_calc;
+                CAST(v_t AS FLOAT) AS true_wind_speed,
+                CAST(v_d AS FLOAT) AS true_wind_angle,
+                CASE
+                    WHEN v_t IS NULL THEN NULL
+                    WHEN v_t < 1.0  THEN 0
+                    WHEN v_t < 4.0  THEN 1
+                    WHEN v_t < 7.0  THEN 2
+                    WHEN v_t < 11.0 THEN 3
+                    WHEN v_t < 17.0 THEN 4
+                    WHEN v_t < 22.0 THEN 5
+                    WHEN v_t < 28.0 THEN 6
+                    WHEN v_t < 34.0 THEN 7
+                    WHEN v_t < 41.0 THEN 8
+                    WHEN v_t < 48.0 THEN 9
+                    WHEN v_t < 56.0 THEN 10
+                    WHEN v_t < 64.0 THEN 11
+                    ELSE 12
+                END AS beaufort_number,
+                CAST(foc_raw AS FLOAT) AS foc,
+                CAST(fgc_raw AS FLOAT) AS fgc
+            FROM true_wind_calc
+        ) AS source
+        ON target.ds_timestamp = source.ds_timestamp -- 중복 판단 기준
+        WHEN MATCHED THEN
+            UPDATE SET
+                target.true_wind_speed = source.true_wind_speed,
+                target.true_wind_angle = source.true_wind_angle,
+                target.beaufort_number = source.beaufort_number,
+                target.foc = source.foc,
+                target.fgc = source.fgc
+        WHEN NOT MATCHED THEN
+            INSERT (ds_timestamp, true_wind_speed, true_wind_angle, beaufort_number, foc, fgc)
+            VALUES (source.ds_timestamp, source.true_wind_speed, source.true_wind_angle, source.beaufort_number, source.foc, source.fgc);
     """
 
     try:
