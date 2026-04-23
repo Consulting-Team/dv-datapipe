@@ -135,7 +135,7 @@ class ImpalaConnection:
                     if not rows:
                         break
 
-                    batch_df = pl.DataFrame(rows, schema=columns, orient="row")
+                    batch_df = pl.DataFrame(rows, schema=columns, orient="row", infer_schema_length=None)
                     batches.append(batch_df)
 
                 if not batches:

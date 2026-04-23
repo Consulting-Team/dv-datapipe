@@ -277,6 +277,18 @@ def insert_calc_data(start: str, end: str):
     start = datetime.strptime(start, "%Y%m%d").strftime(dt_format)
     end = (datetime.strptime(end, "%Y%m%d") + timedelta(days=1)).strftime(dt_format)
 
+    # single / twin
+    # sql = f"""
+    #     INSERT OVERWRITE {DB_NAME}.{tgt_tbl} (
+    #         ds_timestamp,
+    #         true_wind_speed,
+    #         true_wind_angle,
+    #         beaufort_number,
+    #         foc,
+    #         fgc,
+    #         me_out_pwr
+    # """
+
     sql = f"""
         INSERT OVERWRITE {DB_NAME}.{tgt_tbl} (
             ds_timestamp,
@@ -303,16 +315,16 @@ def insert_calc_data(start: str, end: str):
         true_wind_calc AS (
             SELECT
                 ds_timestamp,
-                CAST(SQRT(POWER(v_tx, 2) + POWER(v_ty, 2)) AS FLOAT) AS v_t,
-                CAST(DEGREES(ATAN2(v_tx, v_ty)) AS FLOAT) AS v_d,
-                CAST(foc AS FLOAT) AS foc,
-                CAST(fgc AS FLOAT) AS fgc
+                SQRT(POWER(v_tx, 2) + POWER(v_ty, 2)) AS v_t,
+                DEGREES(ATAN2(v_tx, v_ty)) AS v_d,
+                foc,
+                fgc
             FROM vector_base
         )
         SELECT
             ds_timestamp,
-            v_t AS true_wind_speed,
-            v_d AS true_wind_angle,
+            CAST(v_t AS FLOAT) AS true_wind_speed,
+            CAST(v_d AS FLOAT) as true_wind_angle,
             CASE
                 WHEN v_t IS NULL THEN NULL
                 WHEN v_t < 1.0  THEN 0
@@ -329,8 +341,8 @@ def insert_calc_data(start: str, end: str):
                 WHEN v_t < 64.0 THEN 11
                 ELSE 12
             END AS beaufort_number,
-            foc,
-            fgc
+            CAST(foc AS FLOAT),
+            CAST(fgc AS FLOAT)
         FROM true_wind_calc;
     """
 
