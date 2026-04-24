@@ -542,6 +542,8 @@ def main():
     end = config.end.strftime("%Y%m%d")
     insert_data(col_names, metadata_list, start=start, end=end)
 
+    print(f"{start}\n{end}")
+
 
 if __name__ == "__main__":
     start = perf_counter()

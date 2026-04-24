@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--hull", "H2521", "--start", "2026-03-01", "--end", "2026-03-02", "-c"]
+            "args": ["--hull", "H2521", "--start", "2026-03-15", "--end", "2026-09-02", "-c"]
             // "args": ["--hull", "H2508", "--date", "2025-06-01"]
         },
         {
@@ -21,6 +21,14 @@
             "console": "integratedTerminal",
             "args": ["--path", "resources/csv/H2521_metadata.csv"]
             // "args": ["--hull", "H2508", "--date", "2025-06-01"]
+        },
+        {
+            "type": "bashdb",
+            "request": "launch",
+            "name": "Bash Debug (현재 파일)",
+            "cwd": "${workspaceFolder}",
+            "program": "${file}",
+            "terminalKind": "integrated"
         }
     ]
 }
