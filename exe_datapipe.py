@@ -528,21 +528,21 @@ def main():
     config.display()
 
     # 메타데이터 읽기
-    metadata_list = read_metadata(f"resources/csv/{config.hull}_metadata.csv")
+    metadata_dict = read_metadata(f"resources/csv/{config.hull}_metadata.csv")
 
     # 기존 테이블 및 데이터 삭제
     if config.clear:
         clear_table()
 
     # Iceberg 테이블 생성
-    col_names = create_iceberg_table(metadata_list)
+    col_names = create_iceberg_table(metadata_dict)
 
     # 데이터 삽입
     start = config.start.strftime("%Y%m%d")
     end = config.end.strftime("%Y%m%d")
-    insert_data(col_names, metadata_list, start=start, end=end)
+    insert_data(col_names, metadata_dict, start=start, end=end)
 
-    print(f"{start}\n{end}")
+    # print(f"{start}\n{end}")
 
 
 if __name__ == "__main__":

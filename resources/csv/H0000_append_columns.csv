@@ -1,0 +1,4 @@
+hnum,col_name,db_name,table_name,tag,description,unit,data_type
+H2532,reliq_lowpress_outlet_diff_press,gl,h2532_ias_ias_pivot,pr021_01_meas1,FRS PCHE- LOW PRESS BOG OUTLET DIFF PRESS H,bar,FLOAT
+H2532,reliq_highpress_inlet_press,gl,h2532_ias_ias_pivot,pr022_01_meas1,FRS PCHE- HIGH PRESS BOG INLET PRESS H,bar,FLOAT
+H2532,reliq_highpress_outlet_diff_press,gl,h2532_ias_ias_pivot,pr023_01_meas1,FRS PCHE- HIGH PRESS BOG OUTLET DIFF PRESS H,bar,FLOAT

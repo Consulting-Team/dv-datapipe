@@ -115,7 +115,7 @@ def append_additional_cols(cols: list[str]) -> list[str]:
                     "me_fg_flow    FLOAT",
                 ]
             )
-        case "H2521" | "H2532":
+        case "H0000" | "H2521" | "H2532":
             cols.extend(
                 [
                     "ge2_power    FLOAT",
@@ -165,7 +165,7 @@ def caculate_additional_cols(df: DataFrame) -> DataFrame:
                 # aux. boiler foc 계산
                 (pl.col("auxb_fo_lsmgo_flow") + pl.col("auxb_fo_vlsfo_flow")).alias("auxb_fo_flow"),
             )
-        case "H2521" | "H2532":
+        case "H0000" | "H2521" | "H2532":
             df = df.with_columns(
                 (pl.col("ge2_1_power") + pl.col("ge2_2_power")).alias("ge2_power"),
                 # ME foc / fgc 계산

@@ -23,6 +23,15 @@
             // "args": ["--hull", "H2508", "--date", "2025-06-01"]
         },
         {
+            "name": "Python Debugger: Append Columns",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["--hull", "H0000", "--start", "2026-03-01", "--end", "2026-03-10"]
+            // "args": ["--hull", "H2508", "--date", "2025-06-01"]
+        },
+        {
             "type": "bashdb",
             "request": "launch",
             "name": "Bash Debug (현재 파일)",

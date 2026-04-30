@@ -1,5 +1,7 @@
 """
 메타데이터 업로드 코드
+PostgreSQL에 메타데이터 업데이트
+hs4_service.data_visualization.metadata
 """
 
 import os
