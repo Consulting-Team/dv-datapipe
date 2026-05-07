@@ -17,6 +17,8 @@ import inspect
 DB_NAME = "dv"
 # 새로 생성할 테이블 이름
 TABLE_NAME = f"{config.hull}_raw"
+# m/s에서 knot로 단위 변환 상수
+MS_TO_KN = 900.0 / 463.0
 
 
 def clear_table():
@@ -283,11 +285,11 @@ def insert_calc_data(start: str, end: str):
             WITH vector_base AS (
                 SELECT
                     ds_timestamp,
-                    vdr_relative_wind_speed,
-                    vdr_relative_wind_angle,
+                    vdr_relative_wind_speed, -- unit: m/s
+                    vdr_relative_wind_angle, -- unit: degree
                     vdr_aivdo_sog,
-                    -vdr_relative_wind_speed * SIN(RADIANS(vdr_relative_wind_angle)) AS v_tx,
-                    -vdr_relative_wind_speed * COS(RADIANS(vdr_relative_wind_angle)) + vdr_aivdo_sog AS v_ty,
+                    -{MS_TO_KN} * vdr_relative_wind_speed * SIN(RADIANS(vdr_relative_wind_angle)) AS v_tx,
+                    -{MS_TO_KN} * vdr_relative_wind_speed * COS(RADIANS(vdr_relative_wind_angle)) + vdr_aivdo_sog AS v_ty,
                     me_fo_flow + ge_fo_flow + auxb_fo_flow AS foc_raw,
                     me_fg_flow + ge_fg_flow AS fgc_raw
                 FROM {DB_NAME}.{src_tbl}
