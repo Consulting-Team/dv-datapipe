@@ -28,7 +28,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--hull", "H0000", "--start", "2026-03-01", "--end", "2026-03-10"]
+            "args": ["--hull", "H0000", "--start", "2026-03-01", "--end", "2026-03-02", "--meta", "resources/csv/H0000_append_columns.csv"]
             // "args": ["--hull", "H2508", "--date", "2025-06-01"]
         },
         {

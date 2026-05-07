@@ -1,4 +1,7 @@
-# 오브젝트 스토리지에 저장된 parquet 파일 읽기
+"""
+오브젝트 스토리지에 저장된 parquet 파일 읽기
+"""
+
 from config import config
 import polars as pl
 

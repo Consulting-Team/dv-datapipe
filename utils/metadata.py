@@ -93,7 +93,7 @@ def get_schema(metadata_dict: dict[str, list[MetaData]]):
     for tbl_name in metadata_dict.keys():
         schema[f"id_{tbl_name}"] = pl.Int64
 
-    schema["ds_timestamp"] = pl.Datetime
+    schema["ds_timestamp"] = pl.Datetime(time_unit="ms")
 
     return schema
 
