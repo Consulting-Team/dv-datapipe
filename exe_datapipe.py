@@ -530,7 +530,8 @@ def main():
     config.display()
 
     # 메타데이터 읽기
-    metadata_dict = read_metadata(f"resources/csv/{config.hull}_metadata.csv")
+    metadata_path = config.metapath
+    metadata_dict = read_metadata(metadata_path)
 
     # 기존 테이블 및 데이터 삭제
     if config.clear:
@@ -543,8 +544,6 @@ def main():
     start = config.start.strftime("%Y%m%d")
     end = config.end.strftime("%Y%m%d")
     insert_data(col_names, metadata_dict, start=start, end=end)
-
-    # print(f"{start}\n{end}")
 
 
 if __name__ == "__main__":

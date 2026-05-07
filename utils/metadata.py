@@ -22,7 +22,10 @@ def read_metadata(path: str) -> dict[str, MetaData]:
     logger.info(f"👉 Read the meatadata from '{path}'.")
     keywords = ["cams", "ias", "ams", "vdr"]
 
-    df = pl.read_csv(path)
+    try:
+        df = pl.read_csv(path)
+    except Exception as e:
+        logger.error(f"❌ Failed to read metadata.\n{e}")
 
     tables = (
         df.select("table_name")
@@ -72,10 +75,6 @@ def get_schema(metadata_dict: dict[str, list[MetaData]]):
         for m in metadata_list:
             col_name = m.col_name
             data_type = m.data_type
-            # if data_type == "DOUBLE":
-            #     schema[col_name] = pl.Float64
-            # if data_type == "INTEGER":
-            #     schema[col_name] = pl.Int32
 
             match data_type:
                 case "DOUBLE":

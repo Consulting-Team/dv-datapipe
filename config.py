@@ -21,13 +21,12 @@ os.chdir(base_path)
 class Config:
     # hull number
     hull: str
-    # start date
     start: date
-    # end date
     end: date
     logger: Logger
     storage_location: str
     clear: bool
+    metapath: str | None
 
     # impala 연결정보
     impala_host: str | None
@@ -51,6 +50,7 @@ class Config:
         self.logger.info(f"   - Impala User: {self.impala_user}")
         self.logger.info(f"   - Storage Account: {self.hs4v1_abfs_strg_acc}")
         self.logger.info(f"   - Container Name: {self.hs4v1_abfs_strg_cont}")
+        self.logger.info(f"   - Metadata Path: {self.metapath}")
         self.logger.info(f"   - Clear Option: {self.clear}")
 
     def get_storage_options(self) -> dict[str, str]:
@@ -74,8 +74,10 @@ def _initiaize() -> Config:
     # logger 이름
     logger = get_logger(f"logs/{args.hull}_datapipe_iceberg.log")
 
-    # Ojbect sotrage 위치
     hull = args.hull
+    metapath = args.meta
+
+    # Ojbect sotrage 위치
     strg_container_name = os.getenv("HS4V1_ABFS_STRG_CONT")
     strg_account_name = os.getenv("HS4V1_ABFS_STRG_ACC")
     strg_location = f"abfss://{strg_container_name}@{strg_account_name}.dfs.core.windows.net/user/hive/hocean/hs4v2/{hull}/"
@@ -83,7 +85,7 @@ def _initiaize() -> Config:
     # config object 구성
     config = Config(
         hull=hull,
-        # date=args.date,
+        metapath=metapath,
         start=args.start,
         end=args.end,
         hs4v1_abfs_strg_acc=strg_account_name,
@@ -109,12 +111,9 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--hull", type=str, default="H0000", help="input hull number (H0000)"
     )
-    # parser.add_argument(
-    #     "--date",
-    #     type=date.fromisoformat,
-    #     default=str(date.today()),
-    #     help="input date in YYYY-MM-DD fromat",
-    # )
+    parser.add_argument(
+        "--meta", type=str, default="", help="metadata path"
+    )
     parser.add_argument(
         "--start",
         type=date.fromisoformat,
