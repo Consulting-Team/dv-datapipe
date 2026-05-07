@@ -10,8 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--hull", "H2521", "--start", "2026-03-15", "--end", "2026-09-02", "-c"]
-            // "args": ["--hull", "H2508", "--date", "2025-06-01"]
+            "args": ["--hull", "H0000", "--start", "2026-03-01", "--end", "2026-03-02", "-c", "--meta", "resources/csv/H0000_metadata.csv"]
         },
         {
             "name": "Python Debugger: Meta Upload",
@@ -20,7 +19,6 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": ["--path", "resources/csv/H2521_metadata.csv"]
-            // "args": ["--hull", "H2508", "--date", "2025-06-01"]
         },
         {
             "name": "Python Debugger: Append Columns",
@@ -29,7 +27,6 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": ["--hull", "H0000", "--start", "2026-03-01", "--end", "2026-03-02", "--meta", "resources/csv/H0000_append_columns.csv"]
-            // "args": ["--hull", "H2508", "--date", "2025-06-01"]
         },
         {
             "type": "bashdb",

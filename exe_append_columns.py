@@ -25,6 +25,9 @@ def check_columns(metadata_dict: dict[str, list[metadata.MetaData]]):
         for md_list in metadata_dict.values()
         for md in md_list
     }
+    # SRC 테이블에 대한 id 추가
+    for table in metadata_dict:
+        metadata_map[f"id_{table}"] = "BIGINT"
     metadata_cols = set(metadata_map.keys())
 
     # raw 테이블 열 불러오기
@@ -56,7 +59,6 @@ def check_columns(metadata_dict: dict[str, list[metadata.MetaData]]):
 
 def main():
     config.display()
-    hnum = config.hull
     start = config.start.strftime("%Y%m%d")
     end = config.end.strftime("%Y%m%d")
 
@@ -70,8 +72,8 @@ def main():
 
     # 데이터 삽입
     df = data_loader.query_data(metadata_dict, start, end)
+    # cols = df에서 추출 --> ["col_name    data_type"]
 
-    print(df)
 
     return
 

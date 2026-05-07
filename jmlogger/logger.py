@@ -61,7 +61,8 @@ def get_logger(log_file_path: str) -> _logging.Logger:
         # 콘솔 핸들러 세팅
         console_handler = _logging.StreamHandler()
         console_handler.setFormatter(coloredFormatter)
-        console_handler.setLevel(_logging.INFO)
+        # console_handler.setLevel(_logging.INFO)
+        console_handler.setLevel(_logging.DEBUG)
 
         # 로거에 헨들러 추가
         logger.addHandler(console_handler)
