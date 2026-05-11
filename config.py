@@ -2,7 +2,7 @@ import os
 import sys
 import argparse
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
 from jmlogger import get_logger
 from dotenv import load_dotenv
 from logging import Logger
@@ -73,10 +73,12 @@ def _initiaize() -> Config:
 
     hull = args.hull
     metapath = args.meta
-    today = datetime.now().strftime("%Y-%m-%d")
+
+    #  메인파일 이름
+    main_file = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
     # logger 이름
-    logger = get_logger(f"logs/{hull}/{today}.log")
+    logger = get_logger(f"logs/{hull}/{main_file}.log")
 
     # Ojbect sotrage 위치
     strg_container_name = os.getenv("HS4V1_ABFS_STRG_CONT")
