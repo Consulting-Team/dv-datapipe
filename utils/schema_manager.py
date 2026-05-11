@@ -1,5 +1,6 @@
 import inspect
 import polars as pl
+import time
 from config import config, logger
 from connection import ImpalaConnection, abfs
 from time import perf_counter
@@ -344,6 +345,7 @@ def insert_data(
     metadata_dict: dict[str, metadata.MetaData],
     start: str,
     end: str,
+    add_cols: bool = True
 ):
     logger.info(f"👉 Insert the data into '{DB_NAME}.{TABLE_NAME}'")
 
@@ -358,7 +360,8 @@ def insert_data(
     df = data_loader.query_data(metadata_dict=metadata_dict, start=start, end=end)
 
     # todo: 호선 별 예외처리
-    df = metadata.caculate_additional_cols(df)
+    if add_cols:
+        df = metadata.caculate_additional_cols(df)
 
     # # 임시 테이블 생성
     create_temporary_table(
@@ -371,14 +374,20 @@ def insert_data(
         }
     )
 
+    time.sleep(1)
+
     # # 임시 생성된 테이블로부터 데이터 복사
     merge_tables({"col_names": col_names, "tbl_name": tmp_tbl_name})
+
+    time.sleep(1)
 
     # # 임시 테이블 및 데이터 파일 삭제
     drop_temporary_table({"tbl_name": tmp_tbl_name, "location": tmp_dir})
 
     # # 계산 테이블 생성: 원본 데이터가 저장된 테이블로부터 계산이 요구되는 테이블 생성
     create_calc_table()
+
+    time.sleep(1)
 
     insert_calc_data(start, end)
 
