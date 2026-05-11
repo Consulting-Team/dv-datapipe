@@ -1,12 +1,12 @@
+import os
+import sys
+import argparse
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from jmlogger import get_logger
 from dotenv import load_dotenv
 from logging import Logger
 from pathlib import Path
-import os
-import sys
-import argparse
 
 # 워킹 디렉토리 설정
 base_path = (
@@ -58,7 +58,7 @@ class Config:
 
         return {
             "account_name": config.hs4v1_abfs_strg_acc,
-            "account_key": config.hs4v1_abfs_strg_key
+            "account_key": config.hs4v1_abfs_strg_key,
         }
 
 
@@ -71,11 +71,12 @@ def _initiaize() -> Config:
     # arguments 파싱
     args = _parse_args()
 
-    # logger 이름
-    logger = get_logger(f"logs/{args.hull}_datapipe_iceberg.log")
-
     hull = args.hull
     metapath = args.meta
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    # logger 이름
+    logger = get_logger(f"logs/{hull}/{today}.log")
 
     # Ojbect sotrage 위치
     strg_container_name = os.getenv("HS4V1_ABFS_STRG_CONT")
@@ -98,7 +99,7 @@ def _initiaize() -> Config:
         impala_pwd=os.getenv("IMPALA_PWD"),
         logger=logger,
         storage_location=strg_location,
-        clear=args.clear
+        clear=args.clear,
     )
 
     return config
@@ -111,9 +112,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--hull", type=str, default="H0000", help="input hull number (H0000)"
     )
-    parser.add_argument(
-        "--meta", type=str, default="", help="metadata path"
-    )
+    parser.add_argument("--meta", type=str, default="", help="metadata path")
     parser.add_argument(
         "--start",
         type=date.fromisoformat,
@@ -126,7 +125,7 @@ def _parse_args() -> argparse.Namespace:
         default=str(date.today()),
         help="end date in YYYY-MM-DD fromat",
     )
-    parser.add_argument("-c", "--clear", action='store_true', help="")
+    parser.add_argument("-c", "--clear", action="store_true", help="")
     args = parser.parse_args()
 
     # hull number 'H'로 시작하는지 체그
@@ -134,7 +133,6 @@ def _parse_args() -> argparse.Namespace:
     args.hull = hnum.strip().upper()
 
     return args
-
 
 
 config: Config = _initiaize()
