@@ -5,7 +5,7 @@ H2521,vdr_aivdo_sog,hlng,h2521_vdr_aivdo1_pivot,speed_over_ground,speed_over_gro
 H2521,vdr_aivdo_cog,hlng,h2521_vdr_aivdo1_pivot,course_over_ground,course_over_ground,deg,FLOAT
 H2521,vdr_lon_water_speed,hlng,h2521_vdr_vdvbw_pivot,longitudinal_water_speed,longitudinal_water_speed,kn,FLOAT
 H2521,vdr_trav_water_speed,hlng,h2521_vdr_vdvbw_pivot,traverse_water_speed,traverse_water_speed,kn,FLOAT
-H2521,vdr_relative_wind_speed,hlng,h2521_vdr_yxmwv_pivot,wind_speed,wind_speed,kn,FLOAT
+H2521,vdr_relative_wind_speed,hlng,h2521_vdr_yxmwv_pivot,wind_speed,wind_speed,m/s,FLOAT
 H2521,vdr_relative_wind_angle,hlng,h2521_vdr_yxmwv_pivot,wind_angle,wind_angle,deg,FLOAT
 H2521,ship_heading,hlng,h2521_vdr_aivdo1_pivot,true_heading,heading,deg,FLOAT
 H2521,ship_fwd_draft,hlng,h2521_ias_ias_no1_pivot,rg009_01_daca_pv,FWD DRAFT LVL,m,FLOAT

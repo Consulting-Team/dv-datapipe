@@ -30,7 +30,7 @@ def main():
         confirm = input("Will you proceed the process? [y/n]: ").lower()
     if confirm != "y":
         print("Process aborted.")
-        exit()  # 또는 return
+        exit()
 
     if config.clear:
         # 기존 테이블 및 데이터 삭제

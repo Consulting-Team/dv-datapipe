@@ -5,7 +5,7 @@ H2532,vdr_aivdo_sog,gl,h2532_vdr_aivdo1_pivot,speed_over_ground,speed_over_groun
 H2532,vdr_aivdo_cog,gl,h2532_vdr_aivdo1_pivot,course_over_ground,course_over_ground,deg,FLOAT
 H2532,vdr_lon_water_speed,gl,h2532_vdr_vdvbw_pivot,longitudinal_water_speed,longitudinal_water_speed,kn,FLOAT
 H2532,vdr_trav_water_speed,gl,h2532_vdr_vdvbw_pivot,traverse_water_speed,traverse_water_speed,kn,FLOAT
-H2532,vdr_relative_wind_speed,gl,h2532_vdr_yxmwv_pivot,wind_speed,wind_speed,kn,FLOAT
+H2532,vdr_relative_wind_speed,gl,h2532_vdr_yxmwv_pivot,wind_speed,wind_speed,m/s,FLOAT
 H2532,vdr_relative_wind_angle,gl,h2532_vdr_yxmwv_pivot,wind_angle,wind_angle,deg,FLOAT
 H2532,ship_heading,gl,h2532_vdr_aivdo1_pivot,true_heading,heading,deg,FLOAT
 H2532,ship_fwd_draft,gl,h2532_ias_ias_pivot,mep_40239_meas1,SHIP DRAFT FORE,m,FLOAT

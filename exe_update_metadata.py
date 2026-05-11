@@ -37,6 +37,8 @@ def main():
     if path.exists():
         df = pl.read_csv(path)
         hnum = get_hnum(df)
+
+        df = df.rename({"hnum": "hull_no"})
     else:
         print(f"File not found: {str(path.absolute())}")
 
@@ -61,7 +63,7 @@ def main():
             SELECT id, col_name
             FROM {SCHEMA}.metadata
             WHERE col_name NOT IN ({', \n'.join([f"'{col}'" for col in df['col_name'].to_list()])})
-            AND hnum = '{hnum}';
+            AND hull_no = '{hnum}';
         """
         cursor.execute(sql)
 
@@ -74,7 +76,7 @@ def main():
         sql = f"""
             INSERT INTO {SCHEMA}.metadata ({columns})
             VALUES %s
-            ON CONFLICT (hnum, col_name)
+            ON CONFLICT (hull_no, col_name)
             DO UPDATE SET
                 {update_set}
         """

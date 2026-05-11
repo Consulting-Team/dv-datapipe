@@ -110,6 +110,19 @@ def main():
     # 추가할 열 메타데이터 읽기
     metadata_path = config.metapath
     metadata_dict = metadata.read_metadata(metadata_path)
+    hulls_in_metadata = {table.split("_")[0].lower() for table in metadata_dict.keys()}
+
+    # 호선 번호 체크
+    if config.hull.lower() not in hulls_in_metadata or len(hulls_in_metadata) > 1:
+        print(f"Warning: Hull number mismatch!")
+        print(f" - Config: {config.hull}")
+        print(f" - Metadata found: {', '.join(hulls_in_metadata)}")
+
+        confirm = input("Will you proceed the process? [y/n]: ").lower()
+    if confirm != "y":
+        print("Process aborted.")
+        exit()
+
     col_names = ["ds_timestamp    TIMESTAMP"]
     col_names += [
         f"{md.col_name}    {md.data_type}"
